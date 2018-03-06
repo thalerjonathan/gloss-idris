@@ -1,0 +1,10 @@
+package gloss-idris
+
+sourcedir = src
+modules = Graphics.SDL, Graphics.Config, Effect.SDL
+opts = "-p effects" 
+
+makefile = MakefileSDLC
+
+objs = sdlrun.o, sdlrun.h
+libs = SDL, SDL_gfx
