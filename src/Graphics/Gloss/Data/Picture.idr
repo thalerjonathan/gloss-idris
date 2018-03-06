@@ -1,5 +1,7 @@
 
 module Graphics.Gloss.Data.Picture
+
+{-
         ( Picture       (..)
         , Point, Vector, Path
 
@@ -26,10 +28,10 @@ module Graphics.Gloss.Data.Picture
         , rectangleUpperPath
         , rectangleUpperWire
         , rectangleUpperSolid)
-where
+        -}
+
 import Graphics.Gloss.Rendering
 import Graphics.Gloss.Geometry.Angle
-
 
 -- Constructors ----------------------------------------------------------------
 -- NOTE: The docs here should be identical to the ones on the constructors.
