@@ -4,11 +4,12 @@ sourcedir = src
 modules =   Graphics.Gloss.Rendering
 
           -- DATA
-          , Graphics.Gloss.Data.Picture
           , Graphics.Gloss.Data.Display
+          , Graphics.Gloss.Data.Picture
           , Graphics.Gloss.Data.Point
           , Graphics.Gloss.Data.Vector
-          
+          , Graphics.Gloss.Data.ViewPort
+
           -- GEOMETRY
           , Graphics.Gloss.Geometry.Angle
           , Graphics.Gloss.Geometry.Line
