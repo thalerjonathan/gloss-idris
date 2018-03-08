@@ -3,24 +3,36 @@ package gloss-idris
 sourcedir = src
 modules =   Graphics.Gloss.Rendering
 
-          , Graphics.Gloss.Internals.Codec.PNG
+          -- DATA
+          , Graphics.Gloss.Data.Picture
+          , Graphics.Gloss.Data.Display
+          , Graphics.Gloss.Data.Point
+          , Graphics.Gloss.Data.Vector
+          
+          -- GEOMETRY
+          , Graphics.Gloss.Geometry.Angle
+          , Graphics.Gloss.Geometry.Line
 
+          -- internal stuff ---------------------------
+          -- CODEC
+          , Graphics.Gloss.Internals.Codec.PNG
+          -- DATA
           , Graphics.Gloss.Internals.Data.Color
           , Graphics.Gloss.Internals.Data.Picture
-
+          -- RENDERING
           , Graphics.Gloss.Internals.Rendering.Bitmap
           , Graphics.Gloss.Internals.Rendering.Circle
           , Graphics.Gloss.Internals.Rendering.Common 
           , Graphics.Gloss.Internals.Rendering.Picture
           , Graphics.Gloss.Internals.Rendering.State
-
+          -- OPENGL
           , Graphics.Rendering.Gl.Buffers
           , Graphics.Rendering.Gl.Gl41
           , Graphics.Rendering.Gl.Types
 
-opts = "-p contrib" 
 
 -- pkgs = contrib
+opts = "-p contrib"
 
 makefile = MakefileGl
 

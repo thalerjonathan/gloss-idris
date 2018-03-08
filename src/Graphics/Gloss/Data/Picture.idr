@@ -1,4 +1,3 @@
-
 module Graphics.Gloss.Data.Picture
 
 {-
@@ -30,46 +29,46 @@ module Graphics.Gloss.Data.Picture
         , rectangleUpperSolid)
         -}
 
-import Graphics.Gloss.Rendering
-import Graphics.Gloss.Geometry.Angle
+import public Graphics.Gloss.Rendering
+import        Graphics.Gloss.Geometry.Angle
 
 -- Constructors ----------------------------------------------------------------
 -- NOTE: The docs here should be identical to the ones on the constructors.
 
 -- | A blank picture, with nothing in it.
-blank :: Picture
-blank   = Blank
+blank : Picture
+blank = Blank
 
 -- | A convex polygon filled with a solid color.
-polygon :: Path -> Picture
+polygon : Path -> Picture
 polygon = Polygon
 
 -- | A line along an arbitrary path.
-line :: Path -> Picture
-line    = Line
+line : Path -> Picture
+line = Line
 
 -- | A circle with the given radius.
-circle  :: Float  -> Picture
-circle  = Circle
+circle : Double  -> Picture
+circle = Circle
 
 -- | A circle with the given thickness and radius.
 --   If the thickness is 0 then this is equivalent to `Circle`.
-thickCircle  :: Float -> Float -> Picture
+thickCircle : Double -> Double -> Picture
 thickCircle = ThickCircle
 
 -- | A circular arc drawn counter-clockwise between two angles (in degrees) 
 --   at the given radius.
-arc     :: Float -> Float -> Float -> Picture
+arc : Double -> Double -> Double -> Picture
 arc = Arc
 
 -- | A circular arc drawn counter-clockwise between two angles (in degrees),
 --   with the given radius  and thickness.
 --   If the thickness is 0 then this is equivalent to `Arc`.
-thickArc :: Float -> Float -> Float -> Float -> Picture
+thickArc : Double -> Double -> Double -> Double -> Picture
 thickArc = ThickArc
 
 -- | Some text to draw with a vector font.
-text :: String -> Picture
+text : String -> Picture
 text = Text
 
 -- | A bitmap image with a width, height and a Vector holding the 
@@ -80,46 +79,46 @@ text = Text
 --  If you are programatically generating the image for
 --  each frame then use `False`.  
 --  If you have loaded it from a file then use `True`.
-bitmap  :: Int -> Int -> BitmapData -> Bool -> Picture
+bitmap : Int -> Int -> BitmapData -> Bool -> Picture
 bitmap = Bitmap
 
 -- | A picture drawn with this color.
-color :: Color -> Picture -> Picture
+color : Color -> Picture -> Picture
 color = Color
 
 -- | A picture translated by the given x and y coordinates.
-translate :: Float -> Float -> Picture -> Picture
+translate : Double -> Double -> Picture -> Picture
 translate = Translate
 
 -- | A picture rotated clockwise by the given angle (in degrees).
-rotate  :: Float -> Picture -> Picture
+rotate : Double -> Picture -> Picture
 rotate = Rotate
 
 -- | A picture scaled by the given x and y factors.
-scale   :: Float -> Float -> Picture -> Picture
+scale : Double -> Double -> Picture -> Picture
 scale = Scale
 
 -- | A picture consisting of several others.
-pictures :: [Picture] -> Picture
+pictures : List Picture -> Picture
 pictures = Pictures
 
 
 -- Other Shapes ---------------------------------------------------------------
 -- | A closed loop along a path.
-lineLoop :: Path -> Picture
-lineLoop []     = Line []
-lineLoop (x:xs) = Line ((x:xs) ++ [x])
+lineLoop : Path -> Picture
+lineLoop []        = Line []
+lineLoop (x :: xs) = Line ((x :: xs) ++ [x])
 
 
 -- Circles and Arcs -----------------------------------------------------------
 -- | A solid circle with the given radius.
-circleSolid :: Float -> Picture
+circleSolid : Double -> Picture
 circleSolid r 
         = thickCircle (r/2) r
 
 
 -- | A solid arc, drawn counter-clockwise between two angles at the given radius.
-arcSolid  :: Float -> Float -> Float -> Picture
+arcSolid : Double -> Double -> Double -> Picture
 arcSolid a1 a2 r 
         = thickArc a1 a2 (r/2) r 
 
@@ -133,7 +132,7 @@ arcSolid a1 a2 r
 --   origin, but I think taking the absolute value will be less surprising
 --   for the user.
 -- 
-sectorWire :: Float -> Float -> Float -> Picture
+sectorWire : Double -> Double -> Double -> Picture
 sectorWire a1 a2 r_
  = let r        = abs r_
    in  Pictures 
@@ -148,8 +147,8 @@ sectorWire a1 a2 r_
 
 -- | A path representing a rectangle centered about the origin
 rectanglePath 
-        :: Float        -- ^ width of rectangle
-        -> Float        -- ^ height of rectangle
+        : Double        -- ^ width of rectangle
+        -> Double        -- ^ height of rectangle
         -> Path
 rectanglePath sizeX sizeY                       
  = let  sx      = sizeX / 2
@@ -158,32 +157,29 @@ rectanglePath sizeX sizeY
 
 
 -- | A wireframe rectangle centered about the origin.
-rectangleWire :: Float -> Float -> Picture
+rectangleWire : Double -> Double -> Picture
 rectangleWire sizeX sizeY
         = lineLoop $ rectanglePath sizeX sizeY
 
-
--- | A wireframe rectangle in the y > 0 half of the x-y plane.
-rectangleUpperWire :: Float -> Float -> Picture
-rectangleUpperWire sizeX sizeY
-        = lineLoop $ rectangleUpperPath sizeX sizeY
-
-
 -- | A path representing a rectangle in the y > 0 half of the x-y plane.
-rectangleUpperPath :: Float -> Float -> Path
+rectangleUpperPath : Double -> Double -> Path
 rectangleUpperPath sizeX sy
  = let  sx      = sizeX / 2
    in   [(-sx, 0), (-sx, sy), (sx, sy), (sx, 0)]
 
+-- | A wireframe rectangle in the y > 0 half of the x-y plane.
+rectangleUpperWire : Double -> Double -> Picture
+rectangleUpperWire sizeX sizeY
+        = lineLoop $ rectangleUpperPath sizeX sizeY
+
 
 -- | A solid rectangle centered about the origin.
-rectangleSolid :: Float -> Float -> Picture
+rectangleSolid : Double -> Double -> Picture
 rectangleSolid sizeX sizeY
         = Polygon $ rectanglePath sizeX sizeY
 
 
 -- | A solid rectangle in the y > 0 half of the x-y plane.
-rectangleUpperSolid :: Float -> Float -> Picture
+rectangleUpperSolid : Double -> Double -> Picture
 rectangleUpperSolid sizeX sizeY
         = Polygon  $ rectangleUpperPath sizeX sizeY
-

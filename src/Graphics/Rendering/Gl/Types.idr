@@ -52,6 +52,6 @@ GLclampf = Double
 GLsizeiptr : Type
 GLsizeiptr = Int
 
-class GlEnum a where
+interface GlEnum a where
   toGlInt   : a -> Int
 

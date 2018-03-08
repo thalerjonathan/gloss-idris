@@ -32,12 +32,13 @@ module Graphics.Gloss.Rendering
         , RS.State)
 -}
 
-import Graphics.Gloss.Internals.Data.Color
-import Graphics.Gloss.Internals.Rendering.Common
-import Graphics.Gloss.Internals.Rendering.Picture
-import Graphics.Gloss.Internals.Data.Picture
-import Graphics.Gloss.Internals.Rendering.State as RS
+import public Graphics.Gloss.Internals.Data.Color
+import public Graphics.Gloss.Internals.Data.Picture
 
+import        Graphics.Gloss.Internals.Rendering.Common
+import public Graphics.Gloss.Internals.Rendering.Picture
+import        Graphics.Gloss.Internals.Rendering.State as RS
+import public Graphics.Gloss.Internals.Rendering.Bitmap
 
 ||| Set up the OpenGL context, clear the buffer, and render the given picture
 |||  into it. 
