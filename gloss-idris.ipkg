@@ -1,10 +1,27 @@
 package gloss-idris
 
 sourcedir = src
-modules = Graphics.SDL, Graphics.Config, Effect.SDL
-opts = "-p effects" 
+modules =   Graphics.Gloss.Rendering
 
-makefile = MakefileSDLC
+          , Graphics.Gloss.Internals.Codec.PNG
 
-objs = sdlrun.o, sdlrun.h
-libs = SDL, SDL_gfx
+          , Graphics.Gloss.Internals.Data.Color
+          , Graphics.Gloss.Internals.Data.Picture
+
+          , Graphics.Gloss.Internals.Rendering.Bitmap
+          , Graphics.Gloss.Internals.Rendering.Circle
+          , Graphics.Gloss.Internals.Rendering.Common 
+          , Graphics.Gloss.Internals.Rendering.Picture
+          , Graphics.Gloss.Internals.Rendering.State
+
+          , Graphics.Rendering.Gl.Buffers
+          , Graphics.Rendering.Gl.Gl41
+          , Graphics.Rendering.Gl.Types
+
+opts = "-p contrib" 
+
+-- pkgs = contrib
+
+makefile = MakefileGl
+
+objs = gl_idris.o, gl_idris.h
