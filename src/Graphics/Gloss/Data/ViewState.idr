@@ -297,122 +297,6 @@ motionScale (Just (_markX, markY)) (posX, posY) viewState
     
     port' = record { viewPortScale = ss' } port
 
-||| Initial view state, with user defined config.
-viewStateInitWithConfig : CommandConfig -> ViewState
-viewStateInitWithConfig commandConfig 
-  = MkViewState 
-      (SortedMap.fromList commandConfig)
-      0.85 
-      0.6
-      0.01
-      Nothing
-      Nothing
-      Nothing
-      viewPortInit
-    {-
-  { viewStateCommands             = Map.fromList commandConfig
-  , viewStateScaleStep            = 0.85
-  , viewStateRotateFactor         = 0.6
-  , viewStateScaleFactor          = 0.01
-  , viewStateTranslateMark        = Nothing
-  , viewStateRotateMark           = Nothing
-  , viewStateScaleMark            = Nothing
-  , viewStateViewPort             = viewPortInit }
--}
-
-||| The initial view state.
-viewStateInit : ViewState
-viewStateInit = viewStateInitWithConfig defaultCommandConfig
-
-||| Like 'updateViewStateWithEvent', but returns 'Nothing' if no update
-|||   was needed.
-updateViewStateWithEventMaybe : Event -> ViewState -> Maybe ViewState
--- matching on Key Down 
-updateViewStateWithEventMaybe (EventKey key Down keyMods pos) viewState = ?bla
-{-
-        | isCommand commands CRestore key keyMods
-        = Just $ viewState { viewStateViewPort = viewPortInit }
-
-        | isCommand commands CBumpZoomOut key keyMods
-        = Just $ controlZoomIn viewState
-
-        | isCommand commands CBumpZoomIn key keyMods
-        = Just $ controlZoomOut viewState
-
-        | isCommand commands CBumpLeft key keyMods
-        = Just $ viewState { viewStateViewPort = motionBump port (20, 0) }
-
-        | isCommand commands CBumpRight key keyMods
-        = Just $ viewState { viewStateViewPort = motionBump port (-20, 0) }
-
-        | isCommand commands CBumpUp key keyMods
-        = Just $ viewState { viewStateViewPort = motionBump port (0, -20) }
-
-        | isCommand commands CBumpDown key keyMods
-        = Just $ viewState { viewStateViewPort = motionBump port (0, 20) }
-
-        | isCommand commands CBumpClockwise key keyMods
-        = Just $ viewState { viewStateViewPort 
-                                = port { viewPortRotate = viewPortRotate port + 5 } }
-
-        | isCommand commands CBumpCClockwise key keyMods
-        = Just $ viewState { viewStateViewPort 
-                                = port { viewPortRotate = viewPortRotate port - 5 } }
-
-
-        -- Start Translation.
-        | isCommand commands CTranslate key keyMods
-        , not  $ currentlyRotating    || currentlyScaling
-        = Just $ viewState { viewStateTranslateMark = Just pos }
-
-        -- Start Rotation.
-        | isCommand commands CRotate key keyMods
-        , not  $ currentlyTranslating || currentlyScaling
-        = Just $ viewState { viewStateRotateMark = Just pos }
-
-        -- Start Scale.
-        | isCommand commands CScale key keyMods
-        , not  $ currentlyTranslating || currentlyRotating
-        = Just $ viewState { viewStateScaleMark  = Just pos }
-
-        | otherwise
-        = Nothing
--}
-
--- matching on key Up
-updateViewStateWithEventMaybe (EventKey key Up keyMods pos) viewState = 
-  -- Kill current translate/rotate/scale command when the mouse button
-  -- is released.
-    Just $ (if currentlyTranslating then killTranslate else id)
-      $ (if currentlyRotating    then killRotate    else id)
-      $ (if currentlyScaling     then killScale     else id)
-      $ viewState
-  where
-    commands : SortedMap Command (List (Key, Maybe Modifiers))
-    commands                = viewStateCommands viewState
-
-    port : ViewPort
-    port = viewStateViewPort viewState
-    currentlyTranslating    = isJust $ viewStateTranslateMark viewState
-    currentlyRotating       = isJust $ viewStateRotateMark    viewState
-    currentlyScaling        = isJust $ viewStateScaleMark     viewState
-
-    killTranslate vs = record { viewStateTranslateMark = Nothing } vs
-    killRotate    vs = record { viewStateRotateMark    = Nothing } vs
-    killScale     vs = record { viewStateScaleMark     = Nothing } vs
-
--- Note that only a translation or rotation applies, not both at the same time.
--- TODO: is the usage of <+> correct here? 
-updateViewStateWithEventMaybe (EventMotion pos) viewState
-  = motionScale     (viewStateScaleMark     viewState) pos viewState <+> -- `mplus` 
-    motionTranslate (viewStateTranslateMark viewState) pos viewState <+> -- `mplus`
-    motionRotate    (viewStateRotateMark    viewState) pos viewState
-updateViewStateWithEventMaybe (EventResize _) _ = Nothing
-
-||| Apply an event to a `ViewState`.
-updateViewStateWithEvent : Event -> ViewState -> ViewState
-updateViewStateWithEvent ev viewState
-  = fromMaybe viewState $ updateViewStateWithEventMaybe ev viewState
 
 ||| Zoom in a `ViewState` by the scale step.
 controlZoomIn : ViewState -> ViewState
@@ -457,3 +341,103 @@ motionBump port (bumpX, bumpY)
     offset = (bumpX / scale, bumpY / scale)
 
     o       = rotateV (degToRad r) offset
+
+||| Initial view state, with user defined config.
+viewStateInitWithConfig : CommandConfig -> ViewState
+viewStateInitWithConfig commandConfig 
+  = MkViewState 
+      (SortedMap.fromList commandConfig)
+      0.85 
+      0.6
+      0.01
+      Nothing
+      Nothing
+      Nothing
+      viewPortInit
+    {-
+  { viewStateCommands             = Map.fromList commandConfig
+  , viewStateScaleStep            = 0.85
+  , viewStateRotateFactor         = 0.6
+  , viewStateScaleFactor          = 0.01
+  , viewStateTranslateMark        = Nothing
+  , viewStateRotateMark           = Nothing
+  , viewStateScaleMark            = Nothing
+  , viewStateViewPort             = viewPortInit }
+-}
+
+||| The initial view state.
+viewStateInit : ViewState
+viewStateInit = viewStateInitWithConfig defaultCommandConfig
+
+||| Like 'updateViewStateWithEvent', but returns 'Nothing' if no update
+|||   was needed.
+updateViewStateWithEventMaybe : Event -> ViewState -> Maybe ViewState
+-- matching on Key Down
+-- oh how i wished idris has guards as haskell has ...
+updateViewStateWithEventMaybe (EventKey key Down keyMods pos) viewState = 
+  if isCommand commands CRestore key keyMods
+    then Just $ record { viewStateViewPort = viewPortInit } viewState
+    else if isCommand commands CBumpZoomOut key keyMods
+      then Just $ controlZoomIn viewState
+      else if isCommand commands CBumpZoomIn key keyMods
+        then Just $ controlZoomOut viewState
+        else if isCommand commands CBumpLeft key keyMods
+          then Just $ record { viewStateViewPort = motionBump port (20, 0) } viewState
+          else if isCommand commands CBumpRight key keyMods
+            then Just $ record { viewStateViewPort = motionBump port (-20, 0) } viewState
+            else if isCommand commands CBumpUp key keyMods
+              then Just $ record { viewStateViewPort = motionBump port (0, -20) } viewState
+              else if isCommand commands CBumpDown key keyMods
+                then Just $ record { viewStateViewPort = motionBump port (0, 20) } viewState
+                else if isCommand commands CBumpClockwise key keyMods
+                  then Just $ record { viewStateViewPort 
+                                            = record { viewPortRotate = viewPortRotate port + 5 } port } viewState
+                  else if isCommand commands CBumpCClockwise key keyMods
+                    then Just $ record { viewStateViewPort 
+                                            = record { viewPortRotate = viewPortRotate port - 5 } port } viewState
+                    -- Start Translation.
+                    else if (isCommand commands CTranslate key keyMods && not $ currentlyRotating || currentlyScaling)
+                      then Just $ record { viewStateTranslateMark = Just pos } viewState
+                      -- Start Rotation.
+                      else if (isCommand commands CRotate key keyMods && not $ currentlyTranslating || currentlyScaling)
+                        then Just $ record { viewStateRotateMark = Just pos } viewState
+                        -- Start Scale.
+                        else if (isCommand commands CScale key keyMods && not $ currentlyTranslating || currentlyRotating)
+                          then Just $ record { viewStateScaleMark  = Just pos } viewState
+                          else Nothing
+  where
+    commands : SortedMap Command (List (Key, Maybe Modifiers))
+    commands  = viewStateCommands viewState
+
+    port : ViewPort
+    port = viewStateViewPort viewState
+
+-- matching on key Up
+updateViewStateWithEventMaybe (EventKey key Up keyMods pos) viewState = 
+  -- Kill current translate/rotate/scale command when the mouse button
+  -- is released.
+    Just $ (if currentlyTranslating then killTranslate else id)
+      $ (if currentlyRotating    then killRotate    else id)
+      $ (if currentlyScaling     then killScale     else id)
+      $ viewState
+  where
+    currentlyTranslating    = isJust $ viewStateTranslateMark viewState
+    currentlyRotating       = isJust $ viewStateRotateMark    viewState
+    currentlyScaling        = isJust $ viewStateScaleMark     viewState
+
+    killTranslate vs = record { viewStateTranslateMark = Nothing } vs
+    killRotate    vs = record { viewStateRotateMark    = Nothing } vs
+    killScale     vs = record { viewStateScaleMark     = Nothing } vs
+
+-- Note that only a translation or rotation applies, not both at the same time.
+-- TODO: is the usage of <+> correct here? 
+updateViewStateWithEventMaybe (EventMotion pos) viewState
+  = motionScale     (viewStateScaleMark     viewState) pos viewState <+> -- `mplus` 
+    motionTranslate (viewStateTranslateMark viewState) pos viewState <+> -- `mplus`
+    motionRotate    (viewStateRotateMark    viewState) pos viewState
+updateViewStateWithEventMaybe (EventResize _) _ = Nothing
+
+||| Apply an event to a `ViewState`.
+updateViewStateWithEvent : Event -> ViewState -> ViewState
+updateViewStateWithEvent ev viewState
+  = fromMaybe viewState $ updateViewStateWithEventMaybe ev viewState
