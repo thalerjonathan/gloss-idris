@@ -16,6 +16,7 @@ where
 
 import Graphics.Gloss.Data.Picture
 import Graphics.Gloss.Geometry.Angle
+import Graphics.Gloss.Rendering
 
 ||| The magnitude of a vector.
 export

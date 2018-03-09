@@ -23,6 +23,7 @@ import Data.SortedMap
 import Graphics.Gloss.Data.Vector
 import Graphics.Gloss.Data.ViewPort
 import Graphics.Gloss.Geometry.Angle
+import Graphics.Gloss.Rendering 
 
 import Graphics.Gloss.Internals.Interface.Event
 import Graphics.Gloss.Internals.Interface.Backend
@@ -204,6 +205,98 @@ record ViewState where
   ||| The current viewport.
   viewStateViewPort      : ViewPort
 
+||| Apply a translation to the `ViewState`.
+motionTranslate 
+         : Maybe (Double, Double)         -- Location of first mark.
+        -> (Double, Double)               -- Current position.
+        -> ViewState -> Maybe ViewState
+motionTranslate Nothing _ _ = Nothing
+motionTranslate (Just (markX, markY)) (posX, posY) viewState
+    = Just $ record
+            { viewStateViewPort      = port'
+            , viewStateTranslateMark = Just (posX, posY) } viewState
+  where
+    port : ViewPort
+    port = viewStateViewPort viewState
+
+    trans : (Double, Double)
+    trans   = viewPortTranslate port
+
+    scale : Double
+    scale   = viewPortScale port
+
+    r : Double
+    r = viewPortRotate port
+
+    dX : Double
+    dX = markX - posX
+
+    dY : Double
+    dY = markY - posY
+
+    offset : (Double, Double)
+    offset = (dX / scale, dY / scale)
+
+    o : Vector
+    o = rotateV (degToRad r) offset
+    port'   = record { viewPortTranslate = trans - o } port
+
+-- | Apply a rotation to the `ViewState`.
+motionRotate 
+         : Maybe (Double, Double)         -- Location of first mark.
+        -> (Double, Double)               -- Current position.
+        -> ViewState -> Maybe ViewState
+motionRotate Nothing _ _ = Nothing
+motionRotate (Just (markX, _markY)) (posX, posY) viewState
+  = Just $ record
+        { viewStateViewPort = port'
+        , viewStateRotateMark   = Just (posX, posY) } viewState
+  where
+    port : ViewPort
+    port = viewStateViewPort viewState
+
+    rotate : Double
+    rotate = viewPortRotate port
+
+    rotateFactor : Double
+    rotateFactor = viewStateRotateFactor viewState
+
+    port' = record { viewPortRotate = rotate - rotateFactor * (posX - markX) } port
+
+-- | Apply a scale to the `ViewState`.
+motionScale
+         : Maybe (Double, Double)         -- Location of first mark.
+        -> (Double, Double)               -- Current position.
+        -> ViewState -> Maybe ViewState
+motionScale Nothing _ _ = Nothing
+motionScale (Just (_markX, markY)) (posX, posY) viewState
+    = Just $ record
+        { viewStateViewPort  = port'
+        , viewStateScaleMark = Just (posX, posY) } viewState
+  where
+    port : ViewPort
+    port = viewStateViewPort viewState
+
+    scale : Double
+    scale = viewPortScale port
+
+    scaleFactor : Double
+    scaleFactor = viewStateScaleFactor viewState
+
+    -- Limit the amount of downward scaling so it maxes
+      -- out at 1 percent of the original. There's not much
+      -- point scaling down to no pixels, or going negative
+      -- so that the image is inverted.
+    ss : Double
+    ss = if posY > markY
+          then scale - scale * (scaleFactor * (posY  - markY))
+          else scale + scale * (scaleFactor * (markY - posY))
+
+    ss' : Double
+    ss' = max 0.01 ss
+    
+    port' = record { viewPortScale = ss' } port
+
 ||| Initial view state, with user defined config.
 viewStateInitWithConfig : CommandConfig -> ViewState
 viewStateInitWithConfig commandConfig 
@@ -234,95 +327,87 @@ viewStateInit = viewStateInitWithConfig defaultCommandConfig
 ||| Like 'updateViewStateWithEvent', but returns 'Nothing' if no update
 |||   was needed.
 updateViewStateWithEventMaybe : Event -> ViewState -> Maybe ViewState
+-- matching on Key Down 
+updateViewStateWithEventMaybe (EventKey key Down keyMods pos) viewState = ?bla
 {-
-updateViewStateWithEventMaybe (EventKey key keyState keyMods pos) viewState
         | isCommand commands CRestore key keyMods
-        , keyState      == Down
         = Just $ viewState { viewStateViewPort = viewPortInit }
 
         | isCommand commands CBumpZoomOut key keyMods
-        , keyState      == Down
         = Just $ controlZoomIn viewState
 
         | isCommand commands CBumpZoomIn key keyMods
-        , keyState      == Down
         = Just $ controlZoomOut viewState
 
         | isCommand commands CBumpLeft key keyMods
-        , keyState      == Down
         = Just $ viewState { viewStateViewPort = motionBump port (20, 0) }
 
         | isCommand commands CBumpRight key keyMods
-        , keyState      == Down
         = Just $ viewState { viewStateViewPort = motionBump port (-20, 0) }
 
         | isCommand commands CBumpUp key keyMods
-        , keyState      == Down
         = Just $ viewState { viewStateViewPort = motionBump port (0, -20) }
 
         | isCommand commands CBumpDown key keyMods
-        , keyState      == Down
         = Just $ viewState { viewStateViewPort = motionBump port (0, 20) }
 
         | isCommand commands CBumpClockwise key keyMods
-        , keyState      == Down
         = Just $ viewState { viewStateViewPort 
                                 = port { viewPortRotate = viewPortRotate port + 5 } }
 
         | isCommand commands CBumpCClockwise key keyMods
-        , keyState      == Down
         = Just $ viewState { viewStateViewPort 
                                 = port { viewPortRotate = viewPortRotate port - 5 } }
 
 
         -- Start Translation.
         | isCommand commands CTranslate key keyMods
-        , keyState      == Down
         , not  $ currentlyRotating    || currentlyScaling
         = Just $ viewState { viewStateTranslateMark = Just pos }
 
         -- Start Rotation.
         | isCommand commands CRotate key keyMods
-        , keyState      == Down
         , not  $ currentlyTranslating || currentlyScaling
         = Just $ viewState { viewStateRotateMark = Just pos }
 
         -- Start Scale.
         | isCommand commands CScale key keyMods
-        , keyState      == Down
         , not  $ currentlyTranslating || currentlyRotating
         = Just $ viewState { viewStateScaleMark  = Just pos }
 
-
-        -- Kill current translate/rotate/scale command when the mouse button
-        -- is released.
-        | keyState      == Up
-        = let   killTranslate vs = vs { viewStateTranslateMark = Nothing }
-                killRotate    vs = vs { viewStateRotateMark    = Nothing }
-                killScale     vs = vs { viewStateScaleMark     = Nothing }
-          in  Just
-                $ (if currentlyTranslating then killTranslate else id)
-                $ (if currentlyRotating    then killRotate    else id)
-                $ (if currentlyScaling     then killScale     else id)
-                $ viewState
-
         | otherwise
         = Nothing
-        where   commands                = viewStateCommands viewState
-                port                    = viewStateViewPort viewState
-                currentlyTranslating    = isJust $ viewStateTranslateMark viewState
-                currentlyRotating       = isJust $ viewStateRotateMark    viewState
-                currentlyScaling        = isJust $ viewStateScaleMark     viewState
+-}
 
+-- matching on key Up
+updateViewStateWithEventMaybe (EventKey key Up keyMods pos) viewState = 
+  -- Kill current translate/rotate/scale command when the mouse button
+  -- is released.
+    Just $ (if currentlyTranslating then killTranslate else id)
+      $ (if currentlyRotating    then killRotate    else id)
+      $ (if currentlyScaling     then killScale     else id)
+      $ viewState
+  where
+    commands : SortedMap Command (List (Key, Maybe Modifiers))
+    commands                = viewStateCommands viewState
+
+    port : ViewPort
+    port = viewStateViewPort viewState
+    currentlyTranslating    = isJust $ viewStateTranslateMark viewState
+    currentlyRotating       = isJust $ viewStateRotateMark    viewState
+    currentlyScaling        = isJust $ viewStateScaleMark     viewState
+
+    killTranslate vs = record { viewStateTranslateMark = Nothing } vs
+    killRotate    vs = record { viewStateRotateMark    = Nothing } vs
+    killScale     vs = record { viewStateScaleMark     = Nothing } vs
 
 -- Note that only a translation or rotation applies, not both at the same time.
+-- TODO: is the usage of <+> correct here? 
 updateViewStateWithEventMaybe (EventMotion pos) viewState
-  = motionScale     (viewStateScaleMark     viewState) pos viewState `mplus`
-    motionTranslate (viewStateTranslateMark viewState) pos viewState `mplus`
+  = motionScale     (viewStateScaleMark     viewState) pos viewState <+> -- `mplus` 
+    motionTranslate (viewStateTranslateMark viewState) pos viewState <+> -- `mplus`
     motionRotate    (viewStateRotateMark    viewState) pos viewState
-
 updateViewStateWithEventMaybe (EventResize _) _ = Nothing
--}
 
 ||| Apply an event to a `ViewState`.
 updateViewStateWithEvent : Event -> ViewState -> ViewState
@@ -334,8 +419,12 @@ controlZoomIn : ViewState -> ViewState
 controlZoomIn viewState 
     = record { viewStateViewPort = port' } viewState
   where
+    port : ViewPort
     port = viewStateViewPort viewState
+    
+    scaleStep : Double
     scaleStep = viewStateScaleStep viewState
+
     port' = record { viewPortScale = viewPortScale port / scaleStep } port
 
 ||| Zoom out a `ViewState` by the scale step.
@@ -343,9 +432,13 @@ controlZoomOut : ViewState -> ViewState
 controlZoomOut viewState
     = record { viewStateViewPort = port' } viewState
   where
-    port      = viewStateViewPort
-    scaleStep = viewStateScaleStep
-    port'     = record { viewPortScale = viewPortScale port * scaleStep } port
+    port : ViewPort
+    port = viewStateViewPort viewState
+
+    scaleStep : Double
+    scaleStep = viewStateScaleStep viewState
+
+    port' = record { viewPortScale = viewPortScale port * scaleStep } port
 
 ||| Offset a viewport.
 motionBump : ViewPort -> (Double, Double) -> ViewPort
@@ -353,71 +446,14 @@ motionBump port (bumpX, bumpY)
     = record { viewPortTranslate = trans - o } port
   where
     trans = viewPortTranslate port
+
+    scale : Double
     scale = viewPortScale port
-    r     = viewPortRotate port
 
-    offset  = (bumpX / scale, bumpY / scale)
+    r : Double
+    r = viewPortRotate port
+
+    offset : (Double, Double)
+    offset = (bumpX / scale, bumpY / scale)
+
     o       = rotateV (degToRad r) offset
-
-||| Apply a translation to the `ViewState`.
-motionTranslate 
-         : Maybe (Double, Double)         -- Location of first mark.
-        -> (Double, Double)               -- Current position.
-        -> ViewState -> Maybe ViewState
-motionTranslate Nothing _ _ = Nothing
-motionTranslate (Just (markX, markY)) (posX, posY) viewState
-    = Just $ record
-            { viewStateViewPort      = port'
-            , viewStateTranslateMark = Just (posX, posY) } viewState
-  where  
-    port    = viewStateViewPort viewState
-    trans   = viewPortTranslate port
-    scale   = viewPortScale port
-    r       = viewPortRotate port
-    dX      = markX - posX
-    dY      = markY - posY
-    offset  = (dX / scale, dY / scale)
-    o       = rotateV (degToRad r) offset
-    port'   = record { viewPortTranslate = trans - o } port
-
--- | Apply a rotation to the `ViewState`.
-motionRotate 
-         : Maybe (Double, Double)         -- Location of first mark.
-        -> (Double, Double)               -- Current position.
-        -> ViewState -> Maybe ViewState
-motionRotate Nothing _ _ = Nothing
-motionRotate (Just (markX, _markY)) (posX, posY) viewState
-  = Just $ record
-        { viewStateViewPort = port'
-        , viewStateRotateMark   = Just (posX, posY) } viewState
-  where  
-    port            = viewStateViewPort viewState
-    rotate          = viewPortRotate port
-    rotateFactor    = viewStateRotateFactor viewState
-    port'           = record { viewPortRotate = rotate - rotateFactor * (posX - markX) } port
-
--- | Apply a scale to the `ViewState`.
-motionScale
-         : Maybe (Double, Double)         -- Location of first mark.
-        -> (Double, Double)               -- Current position.
-        -> ViewState -> Maybe ViewState
-motionScale Nothing _ _ = Nothing
-motionScale (Just (_markX, markY)) (posX, posY) viewState
-    = Just $ record
-        { viewStateViewPort  = port'
-        , viewStateScaleMark = Just (posX, posY) } viewState
-  where  
-    port            = viewStateViewPort viewState
-    scale           = viewPortScale port
-    scaleFactor     = viewStateScaleFactor viewState
-    -- Limit the amount of downward scaling so it maxes
-      -- out at 1 percent of the original. There's not much
-      -- point scaling down to no pixels, or going negative
-      -- so that the image is inverted.
-    ss = if posY > markY
-          then scale - scale * (scaleFactor * (posY  - markY))
-          else scale + scale * (scaleFactor * (markY - posY))
-
-    ss'     = max 0.01 ss
-    
-    port' = record { viewPortScale = ss' } port
