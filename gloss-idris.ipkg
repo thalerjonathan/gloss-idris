@@ -17,6 +17,9 @@ modules =   Graphics.Gloss.Rendering
           , Graphics.Gloss.Geometry.Angle
           , Graphics.Gloss.Geometry.Line
 
+          -- INTERFACE
+          , Graphics.Gloss.Interface.IO.Display
+
           -- internal stuff ---------------------------
           -- CODEC
           , Graphics.Gloss.Internals.Codec.PNG
@@ -29,6 +32,7 @@ modules =   Graphics.Gloss.Rendering
           , Graphics.Gloss.Internals.Rendering.Common 
           , Graphics.Gloss.Internals.Rendering.Picture
           , Graphics.Gloss.Internals.Rendering.State
+          , Graphics.Gloss.Internals.Rendering.GLUtils
           -- OPENGL
           , Graphics.Rendering.Gl.Buffers
           , Graphics.Rendering.Gl.Gl41
@@ -36,7 +40,7 @@ modules =   Graphics.Gloss.Rendering
           -- INTERFACE
           , Graphics.Gloss.Internals.Interface.Backend
           , Graphics.Gloss.Internals.Interface.Event
-
+          , Graphics.Gloss.Internals.Interface.Display
           --    BACKEND
           , Graphics.Gloss.Internals.Interface.Backend.Types
 

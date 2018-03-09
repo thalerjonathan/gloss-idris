@@ -56,6 +56,7 @@ import public Graphics.Gloss.Internals.Rendering.Bitmap
 ||| @ state      Current rendering state.
 ||| @ scale       View port scale, which controls the level of detail. Use 1.0 to start with.
 ||| @ picture     Picture to draw.
+export
 displayPicture :  (windowSize : (Int, Int)) 
                -> (colorClear : Color)    
                -> (state : RS.State)     
