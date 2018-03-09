@@ -1,11 +1,12 @@
-
--- | Functions to load bitmap data from various places.
+||| Functions to load bitmap data from various places.
 module Graphics.Gloss.Data.Bitmap
+{-
         ( BitmapData, BitmapFormat(..), RowOrder(..), PixelFormat(..)
         , bitmapOfForeignPtr
         , bitmapOfByteString
         , bitmapOfBMP
         , loadBMP)
 where
-import Graphics.Gloss.Rendering
+-}
 
+import public Graphics.Gloss.Rendering

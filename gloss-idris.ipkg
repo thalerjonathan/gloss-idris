@@ -4,11 +4,14 @@ sourcedir = src
 modules =   Graphics.Gloss.Rendering
 
           -- DATA
+          , Graphics.Gloss.Data.Bitmap
+          , Graphics.Gloss.Data.Color
           , Graphics.Gloss.Data.Display
           , Graphics.Gloss.Data.Picture
           , Graphics.Gloss.Data.Point
           , Graphics.Gloss.Data.Vector
           , Graphics.Gloss.Data.ViewPort
+          , Graphics.Gloss.Data.ViewState
 
           -- GEOMETRY
           , Graphics.Gloss.Geometry.Angle
@@ -30,10 +33,15 @@ modules =   Graphics.Gloss.Rendering
           , Graphics.Rendering.Gl.Buffers
           , Graphics.Rendering.Gl.Gl41
           , Graphics.Rendering.Gl.Types
+          -- INTERFACE
+          , Graphics.Gloss.Internals.Interface.Backend
+          , Graphics.Gloss.Internals.Interface.Event
+
+          --    BACKEND
+          , Graphics.Gloss.Internals.Interface.Backend.Types
 
 
--- pkgs = contrib
-opts = "-p contrib"
+pkgs = contrib
 
 makefile = MakefileGl
 
