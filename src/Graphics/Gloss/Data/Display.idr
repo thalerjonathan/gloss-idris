@@ -7,5 +7,3 @@ data Display =
   InWindow   String (Int, Int) (Int, Int) |
   ||| Display full screen.
   FullScreen
-  -- TODO: port to idris 
-  -- deriving (Eq, Read, Show)

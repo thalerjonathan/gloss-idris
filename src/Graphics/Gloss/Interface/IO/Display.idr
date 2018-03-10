@@ -47,10 +47,10 @@ import        Graphics.Gloss.Internals.Interface.Backend
 ||| @ makePicture   Action to produce the current picture.
 ||| @ eatController Callback to take the display controller.
 export
-displayIO : Display
-        -> Color
-        -> IO Picture
-        -> (Controller -> IO ())
+displayIO : (displayMode : Display)
+        -> (backColor : Color)
+        -> (makePicture : IO Picture)
+        -> (eatController : (Controller -> IO ()))
         -> IO ()
 displayIO displayMode backColor makePicture eatController
   = displayWithBackend

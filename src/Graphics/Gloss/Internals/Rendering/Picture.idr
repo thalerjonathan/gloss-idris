@@ -11,21 +11,6 @@ import Graphics.Gloss.Internals.Rendering.Circle
 import Graphics.Gloss.Internals.Rendering.Common 
 import Graphics.Gloss.Internals.Rendering.State
 
-{-
-import Graphics.Gloss.Internals.Rendering.Common
-import Graphics.Gloss.Internals.Rendering.Circle
-import Graphics.Gloss.Internals.Data.Color
-import System.Mem.StableName
-import Foreign.ForeignPtr
-import Data.IORef
-import Data.List
-import Control.Monad
-import Graphics.Rendering.OpenGL                        (($=), get)
-import qualified Graphics.Rendering.OpenGL.GL           as GL
-import qualified Graphics.Rendering.OpenGL.GLU.Errors   as GLU
-import qualified Graphics.UI.GLUT                       as GLUT
--}
-
 -- Errors ---------------------------------------------------------------------
 handleError : String -> GLenum -> IO ()
 handleError place err

@@ -2,10 +2,8 @@
 module Graphics.Gloss.Internals.Interface.Backend
 
 import public Graphics.Gloss.Internals.Interface.Backend.Types
-
-{- import public Graphics.Gloss.Internals.Interface.Backend.GLFW
+import public Graphics.Gloss.Internals.Interface.Backend.GLFW
 
 export
 defaultBackendState : GLFWState
 defaultBackendState = initBackendState
--}

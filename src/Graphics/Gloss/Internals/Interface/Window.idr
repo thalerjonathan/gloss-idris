@@ -1,5 +1,5 @@
 |||   The main display function.
-module  Graphics.Gloss.Internals.Interface.Window
+module Graphics.Gloss.Internals.Interface.Window
 
 import Data.IORef
 
@@ -10,9 +10,9 @@ import Graphics.Gloss.Data.Color
 import Graphics.Gloss.Internals.Data.Color
 import Graphics.Gloss.Internals.Interface.Backend
 import Graphics.Gloss.Internals.Interface.Backend.Types
+import Graphics.Gloss.Internals.Interface.Debug
 
 {-
-import Graphics.Gloss.Internals.Interface.Debug
 import Graphics.Rendering.OpenGL                        (($=))
 import qualified Graphics.Rendering.OpenGL.GL           as GL
 import Data.IORef (IORef, newIORef)

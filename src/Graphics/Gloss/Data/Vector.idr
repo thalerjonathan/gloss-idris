@@ -1,18 +1,5 @@
 ||| Geometric functions concerning vectors.
 module Graphics.Gloss.Data.Vector
-{-
-        ( Vector
-        , magV
-        , argV
-        , dotV
-        , detV
-        , mulSV
-        , rotateV
-        , angleVV
-        , normalizeV
-        , unitVectorAtAngle )
-where
--}
 
 import Graphics.Gloss.Data.Picture
 import Graphics.Gloss.Geometry.Angle

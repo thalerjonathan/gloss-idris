@@ -1,94 +1,87 @@
-{-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE CPP #-}
-
--- | Support for using GLFW as the window manager backend.
+||| Support for using GLFW as the window manager backend.
 module Graphics.Gloss.Internals.Interface.Backend.GLFW
-        (GLFWState)
-where
+
 import Data.IORef
+
+import Graphics.Gloss.Data.Display
+import Graphics.Gloss.Internals.Interface.Backend.Types
+
+{-
 import Data.Char                           (toLower)
 import Control.Monad
-import Graphics.Gloss.Data.Display
 import Graphics.UI.GLFW                    (WindowValue(..))
 import qualified Graphics.UI.GLFW          as GLFW
 import qualified Graphics.Rendering.OpenGL as GL
 import qualified Control.Exception         as X
+-}
 
-
--- [Note: FreeGlut]
--- ~~~~~~~~~~~~~~~~
--- We use GLUT for font rendering.
---   On freeglut-based installations (usually linux) we need to explicitly
---   initialize GLUT before we can use any of it's functions.
---
----  We also need to deinitialize (exit) GLUT when we close the GLFW
---   window, otherwise opening a gloss window again from GHCi will crash. 
---   For the OS X and Windows version of GLUT there are no such restrictions.
---
---   We assume also assume that only linux installations use freeglut.
---
+{- NOTE: gloss-idris gets rid of GLUT  
+||| [Note: FreeGlut]
+||| ~~~~~~~~~~~~~~~~
+||| We use GLUT for font rendering.
+|||   On freeglut-based installations (usually linux) we need to explicitly
+|||   initialize GLUT before we can use any of it's functions.
+|||
+|||  We also need to deinitialize (exit) GLUT when we close the GLFW
+|||   window, otherwise opening a gloss window again from GHCi will crash. 
+|||   For the OS X and Windows version of GLUT there are no such restrictions.
+|||
+|||   We assume also assume that only linux installations use freeglut.
+|||
 #ifdef linux_HOST_OS
 import qualified Graphics.UI.GLUT          as GLUT
 #endif
+-}
 
-import Graphics.Gloss.Internals.Interface.Backend.Types
+||| State of the GLFW backend library.
+public export
+record GLFWState where
+  constructor MkGLFWState
+  ||| Status of Ctrl, Alt or Shift (Up or Down?)
+  modifiers     : Modifiers
+  ||| Latest mouse position
+  mousePosition : (Int,Int)
+  ||| Latest mousewheel position
+  mouseWheelPos : Int
+  ||| Does the screen need to be redrawn?
+  dirtyScreen   : Bool
+  ||| Action that draws on the screen
+  display       : IO ()
+  ||| Action perforrmed when idling
+  idle          : IO ()
 
-
--- | State of the GLFW backend library.
-data GLFWState
-        = GLFWState
-        { -- | Status of Ctrl, Alt or Shift (Up or Down?)
-          modifiers     :: Modifiers
-
-        -- | Latest mouse position
-        , mousePosition :: (Int,Int)
-
-        -- | Latest mousewheel position
-        , mouseWheelPos :: Int
-
-        -- | Does the screen need to be redrawn?
-        , dirtyScreen   :: Bool
-
-        -- | Action that draws on the screen
-        , display       :: IO ()
-
-        -- | Action perforrmed when idling
-        , idle          :: IO ()
-        }
-
-
--- | Initial GLFW state.
-glfwStateInit :: GLFWState
+||| Initial GLFW state.
+export
+glfwStateInit : GLFWState
 glfwStateInit
-        = GLFWState
-        { modifiers      = Modifiers Up Up Up
-        , mousePosition = (0, 0)
-        , mouseWheelPos = 0
-        , dirtyScreen   = True
-        , display       = return ()
-        , idle          = return () }
+  = MkGLFWState
+      (MkModifiers Up Up Up)
+      (0, 0)
+      0
+      True
+      (pure ())
+      (pure ())
 
+public export
+Backend GLFWState where
+  initBackendState           = ?glfwStateInit
+  initializeBackend          = ?initializeGLFW
+  exitBackend                = ?exitGLFW
+  openWindow                 = ?openWindowGLFW
+  dumpBackendState           = ?dumpStateGLFW
+  installDisplayCallback     = ?installDisplayCallbackGLFW
+  installWindowCloseCallback = ?installWindowCloseCallbackGLFW
+  installReshapeCallback     = ?installReshapeCallbackGLFW
+  installKeyMouseCallback    = ?installKeyMouseCallbackGLFW
+  installMotionCallback      = ?installMotionCallbackGLFW
+  installIdleCallback        = ?installIdleCallbackGLFW
+  runMainLoop                = ?runMainLoopGLFW
+  postRedisplay              = ?postRedisplayGLFW
+  getWindowDimensions        = ?getWindowDimensions -- (\_     -> GLFW.getWindowDimensions)
+  elapsedTime                = ?elapsedTime --(\_     -> GLFW.getTime)
+  sleep                      = ?sleep --(\_ sec -> GLFW.sleep sec)
 
-
-instance Backend GLFWState where
-        initBackendState           = glfwStateInit
-        initializeBackend          = initializeGLFW
-        exitBackend                = exitGLFW
-        openWindow                 = openWindowGLFW
-        dumpBackendState           = dumpStateGLFW
-        installDisplayCallback     = installDisplayCallbackGLFW
-        installWindowCloseCallback = installWindowCloseCallbackGLFW
-        installReshapeCallback     = installReshapeCallbackGLFW
-        installKeyMouseCallback    = installKeyMouseCallbackGLFW
-        installMotionCallback      = installMotionCallbackGLFW
-        installIdleCallback        = installIdleCallbackGLFW
-        runMainLoop                = runMainLoopGLFW
-        postRedisplay              = postRedisplayGLFW
-        getWindowDimensions        = (\_     -> GLFW.getWindowDimensions)
-        elapsedTime                = (\_     -> GLFW.getTime)
-        sleep                      = (\_ sec -> GLFW.sleep sec)
-
-
+{-
 -- Initialise -----------------------------------------------------------------
 -- | Initialise the GLFW backend.
 initializeGLFW :: IORef GLFWState -> Bool-> IO ()
@@ -589,3 +582,4 @@ instance GLFWKey GLFW.MouseButton where
         GLFW.MouseButton5 -> MouseButton $ AdditionalButton 5
         GLFW.MouseButton6 -> MouseButton $ AdditionalButton 6
         GLFW.MouseButton7 -> MouseButton $ AdditionalButton 7
+-}

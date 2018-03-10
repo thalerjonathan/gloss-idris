@@ -1,13 +1,7 @@
-{-# OPTIONS -fspec-constr-count=5 #-}
-{-# LANGUAGE Rank2Types #-}
 module Graphics.Gloss.Internals.Interface.Backend.Types
-{-
-        ( module Graphics.Gloss.Internals.Interface.Backend.Types
-        , module Graphics.Gloss.Data.Display)
-where
--}
 
-import Data.IORef
+import        Data.IORef
+
 import public Graphics.Gloss.Data.Display
 
 mutual

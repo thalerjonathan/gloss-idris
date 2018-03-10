@@ -86,13 +86,13 @@ module Graphics.Gloss
         , play
 -}
 
+import public Graphics.Gloss.Data.Bitmap
+import public Graphics.Gloss.Data.Color
 import public Graphics.Gloss.Data.Display
 import public Graphics.Gloss.Data.Picture
+import public Graphics.Gloss.Interface.Pure.Display
 
 {-
-import Graphics.Gloss.Data.Color
-import Graphics.Gloss.Data.Bitmap
-import Graphics.Gloss.Interface.Pure.Display
 import Graphics.Gloss.Interface.Pure.Animate
 import Graphics.Gloss.Interface.Pure.Simulate
 import Graphics.Gloss.Interface.Pure.Game

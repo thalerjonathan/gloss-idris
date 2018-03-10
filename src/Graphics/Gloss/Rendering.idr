@@ -1,43 +1,11 @@
-
 module Graphics.Gloss.Rendering 
-
-{-
-( |||* Picture data type
-          Picture (..)
-        , Point, Vector, Path
-
-          |||* Colors
-        , Color
-        , makeColor
-        , makeColorI
-        , makeRawColor
-        , makeRawColorI
-        , rgbaOfColor
-        , clampColor
-
-          |||* Bitmaps
-        , BitmapData
-        , BitmapFormat(..), PixelFormat(..), RowOrder(..)
-        , bitmapOfForeignPtr
-        , bitmapOfByteString
-        , bitmapOfBMP
-        , loadBMP
-
-          |||* Rendering
-        , displayPicture
-        , renderPicture
-        , withModelview
-        , withClearBuffer
-        , RS.initState
-        , RS.State)
--}
 
 import public Graphics.Gloss.Internals.Data.Color
 import public Graphics.Gloss.Internals.Data.Picture
 
-import        Graphics.Gloss.Internals.Rendering.Common
+import public Graphics.Gloss.Internals.Rendering.Common
 import public Graphics.Gloss.Internals.Rendering.Picture
-import        Graphics.Gloss.Internals.Rendering.State as RS
+import public Graphics.Gloss.Internals.Rendering.State as RS
 import public Graphics.Gloss.Internals.Rendering.Bitmap
 
 ||| Set up the OpenGL context, clear the buffer, and render the given picture

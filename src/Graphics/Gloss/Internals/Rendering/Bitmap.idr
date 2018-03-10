@@ -10,16 +10,14 @@ import CFFI.Memory
 ||| 
 public export
 data RowOrder = 
-        ||| the top row, followed by the next-lower row and so on.
-        TopToBottom |
-        ||| the bottom row followed by the next-higher row and so on.
-        BottomToTop
-        -- deriving (Eq, Data, Typeable, Show, Ord, Enum, Bounded)
+  ||| the top row, followed by the next-lower row and so on.
+  TopToBottom |
+  ||| the bottom row followed by the next-higher row and so on.
+  BottomToTop
 
 ||| Pixel formats describe the order of the color channels in memory.
 public export
 data PixelFormat = PxRGBA | PxABGR
-        --deriving (Eq, Data, Typeable, Show, Ord, Enum, Bounded)
 
 ||| Description of how the bitmap is layed out in memory.
 ||| 
@@ -30,7 +28,6 @@ record BitmapFormat where
   constructor MkBitmapFormat
   rowOrder    : RowOrder
   pixelFormat : PixelFormat
-  -- deriving (Eq, Data, Typeable, Show, Ord)
 
 ||| Abstract 32-bit RGBA bitmap data.
 public export
@@ -39,7 +36,6 @@ record BitmapData where
   bitmapDataLength : Int  -- length (in bytes)
   bitmapFormat     : BitmapFormat
   bitmapPointer    : Ptr -- Int --(ForeignPtr Word8)
-  -- deriving (Eq, Data, Typeable)
 
 {-
 Show BitmapData where
@@ -58,4 +54,3 @@ bitmapPathd width height = [(-width', -height'), (width', -height'), (width', he
 export
 freeBitmapData : Ptr -> IO ()
 freeBitmapData p = mfree p
-{-# INLINE freeBitmapData #-}

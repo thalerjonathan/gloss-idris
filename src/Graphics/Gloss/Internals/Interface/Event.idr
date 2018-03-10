@@ -1,11 +1,4 @@
-{-# LANGUAGE RankNTypes #-}
 module Graphics.Gloss.Internals.Interface.Event
-{-
-        ( Event (..)
-        , keyMouseEvent
-        , motionEvent )
-where
--}
 
 import Data.IORef
 import Graphics.Gloss.Internals.Interface.Backend
@@ -47,7 +40,7 @@ keyMouseEvent :
         -> (Int, Int)
         -> IO Event
 keyMouseEvent backendRef key keyState modifiers pos
-        = EventKey key keyState modifiers <$> convertPoint backendRef pos
+  = EventKey key keyState modifiers <$> convertPoint backendRef pos
 
 export
 motionEvent :
@@ -56,4 +49,4 @@ motionEvent :
         -> (Int, Int)
         -> IO Event
 motionEvent backendRef pos
-        = EventMotion <$> convertPoint backendRef pos
+  = EventMotion <$> convertPoint backendRef pos

@@ -4,20 +4,10 @@ module Graphics.Gloss.Internals.Rendering.Circle
 import Graphics.Rendering.Gl.Types
 import Graphics.Rendering.Gl.Gl41 as GL
 
-{-
-        ( renderCircle
-        , renderArc)
-where
-import  Graphics.Gloss.Internals.Rendering.Common
-import  GHC.Exts
-import  qualified Graphics.Rendering.OpenGL.GL          as GL
--}
-
 ||| Decide how many line segments to use to render the circle.
 |||  The number of segments we should use to get a nice picture depends on 
 |||  the size of the circle on the screen, not its intrinsic radius.
 |||  If the viewport has been zoomed-in then we need to use more segments.
---
 circleSteps : Double -> Int
 circleSteps sDiam =
   if sDiam < 8
@@ -27,18 +17,15 @@ circleSteps sDiam =
       else if sDiam < 32
         then 32
         else 64
-{-# INLINE circleSteps #-}
 
 addPoint : Double -> Double -> IO ()
 addPoint x y = GL.glVertex2f x y
-{-# INLINE addPoint #-}
 
 addPointOnCircle : Double -> Double -> Double -> Double -> IO ()
 addPointOnCircle posX posY rad tt =
   addPoint
     (posX + (rad * (cos tt)))
     (posY + (rad * (sin tt)))
-{-# INLINE addPointOnCircle #-}
 
 ||| Step functions -------------------------------------------------------------
 renderCircleLine_step : 
@@ -53,7 +40,6 @@ renderCircleLine_step posX posY tStep tStop rad tt =
       addPointOnCircle posX posY rad tt
       renderCircleLine_step posX posY tStep tStop rad 
         (tt + tStep)
-{-# INLINE renderCircleLine_step #-}
 
 renderCircleStrip_step 
         : Double -> Double 
@@ -68,15 +54,12 @@ renderCircleStrip_step posX posY tStep tStop r1 t1 r2 t2 =
       addPointOnCircle posX posY r2 t2
       renderCircleStrip_step posX posY tStep tStop r1 
               (t1 + tStep) r2 (t2 + tStep)
-{-# INLINE renderCircleStrip_step #-}
 
 ||| Convert degrees to radians
-{-# INLINE degToRad #-}
 degToRad : Double -> Double
 degToRad d = d * pi / 180
 
 ||| Normalise an angle to be between 0 and 2*pi radians
-{-# INLINE normalizeAngle #-}
 normalizeAngle : Double -> Double
 normalizeAngle f = f - 2 * pi * floor' (f / (2 * pi))
   where  
@@ -97,7 +80,6 @@ renderCircleLine posX posY steps rad
     GL.renderPrimitive GL.LineLoop
          $ renderCircleLine_step posX posY tStep tStop rad 0.0
          -}
-{-# INLINE renderCircleLine #-}
 
 ||| Render a circle with a given thickness as a triangle strip
 renderCircleStrip : Double -> Double -> Int -> Double -> Double -> IO ()
@@ -111,8 +93,6 @@ renderCircleStrip posX posY steps r width
       GL.glBegin GL_TRIANGLE_STRIP
       renderCircleStrip_step posX posY tStep tStop r1 0.0 r2 (tStep / 2.0)
       GL.glEnd
-
-{-# INLINE renderCircleStrip #-}
 
 -- Circle ---------------------------------------------------------------------
 ||| Render a circle with the given thickness
@@ -143,25 +123,6 @@ renderCircle posX posY scaleFactor radius_ thickness_ =
       let radScreen = scaleFactor * (radius + thickness / 2)
       let steps     = circleSteps radScreen
       renderCircleStrip posX posY steps radius thickness
-    {-
-      -- If the circle is smaller than a pixel, render it as a point.
-      | thickness     == 0
-      , radScreen     <- scaleFactor * (radius + thickness / 2)
-      , radScreen     <= 1
-      = 
-
-      -- Render zero thickness circles with lines.
-      | thickness == 0
-      , radScreen     <- scaleFactor * radius
-      , steps         <- circleSteps radScreen
-      = renderCircleLine  posX posY steps radius
-
-      -- Some thick circle.
-      | radScreen     <- scaleFactor * (radius + thickness / 2)
-      , steps         <- circleSteps radScreen
-      = renderCircleStrip posX posY steps radius thickness
--}
-
 
 -- Arc ------------------------------------------------------------------------
 
@@ -179,7 +140,6 @@ renderArcLine posX posY steps rad a1 a2
       renderCircleLine_step posX posY tStep tStop rad tStart
       endVertex
       GL.glEnd
-{-# INLINE renderArcLine #-}
 
 
 ||| Render an arc with a given thickness as a triangle strip
@@ -224,7 +184,6 @@ renderArcStrip posX posY steps r a1 a2 width
           addPointOnCircle posX posY r1' tStop'
           addPointOnCircle posX posY r2' tStop'
           GL.glEnd
-{-# INLINE renderArcStrip #-}
 
 ||| Render an arc with the given thickness.
 export
@@ -275,4 +234,3 @@ renderSector posX posY scaleFactor radius a1 a2
         , steps         <- circleSteps (2 * radScreen)
         = renderSectorLine posX posY steps radius a1 a2
 -}
-

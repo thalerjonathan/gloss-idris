@@ -3,33 +3,12 @@
 |||   A @Line@ is taken to be infinite in length, while a @Seg@ is finite length
 |||  line segment represented by its two endpoints. 
 module Graphics.Gloss.Geometry.Line
-{-
-        ( segClearsBox
-
-        -- * Closest points
-        , closestPointOnLine
-        , closestPointOnLineParam 
-
-        -- * Line-Line intersection
-        , intersectLineLine
-
-        -- * Seg-Line intersection
-        , intersectSegLine
-        , intersectSegHorzLine
-        , intersectSegVertLine
-
-        -- * Seg-Seg intersection
-        , intersectSegSeg
-        , intersectSegHorzSeg
-        , intersectSegVertSeg)
-        
-where
--}
 
 import Graphics.Gloss.Data.Point
 import Graphics.Gloss.Data.Vector
 
 ||| Check if line segment (P1-P2) clears a box (P3-P4) by being well outside it.
+export
 segClearsBox 
          : Point        -- ^ P1 First point of segment. 
         -> Point        -- ^ P2 Second point of segment.
@@ -68,7 +47,7 @@ segClearsBox (x1, y1) (x2, y2) (xa, ya) (xb, yb) =
 --        |
 -- @
 --
-{-# INLINE closestPointOnLineParam #-}
+export
 closestPointOnLineParam
         : Point        -- ^ `P1`
         -> Point        -- ^ `P2`
@@ -80,6 +59,7 @@ closestPointOnLineParam p1 p2 p3
 
 ||| Given an infinite line which intersects `P1` and `P1`,
 --      return the point on that line that is closest to `P3`
+export
 closestPointOnLine
         : Point        -- ^ `P1`
         -> Point        -- ^ `P2`
@@ -92,19 +72,19 @@ closestPointOnLine p1 p2 p3
 -- Line-Line intersection -----------------------------------------------------
 
 ||| Given four points specifying two lines, get the point where the two lines
---   cross, if any. Note that the lines extend off to infinity, so the
---   intersection point might not line between either of the two pairs of points.
---
--- @
---     \\      /
---      P1  P4
---       \\ /
---        +
---       / \\
---      P3  P2
---     /     \\
--- @
---
+|||   cross, if any. Note that the lines extend off to infinity, so the
+|||   intersection point might not line between either of the two pairs of points.
+|||
+||| 
+|||     \\      /
+|||      P1  P4
+|||       \\ /
+|||        +
+|||       / \\
+|||     P3  P2
+|||     /     \\
+||| 
+export
 intersectLineLine 
         : Point        -- ^ `P1`
         -> Point        -- ^ `P2`
@@ -133,8 +113,8 @@ intersectLineLine (x1, y1) (x2, y2) (x3, y3) (x4, y4)
 
 -- Segment-Line intersection --------------------------------------------------
 ||| Get the point where a segment @P1-P2@ crosses an infinite line @P3-P4@,
---   if any.
---
+|||   if any.
+export
 intersectSegLine
          : Point        -- ^ `P1`
         -> Point        -- ^ `P2`
@@ -152,15 +132,15 @@ intersectSegLine p1 p2 p3 p4 = do
 
 
 ||| Get the point where a segment crosses a horizontal line, if any.
---
--- @ 
---                + P1
---               /
---       -------+---------
---             /        y0
---         P2 +
--- @
---
+|||
+||| 
+|||                + P1
+|||               /
+|||       -------+---------
+|||             /        y0
+|||         P2 +
+|||
+export
 intersectSegHorzLine 
         : Point        -- ^ P1 First point of segment.
         -> Point        -- ^ P2 Second point of segment.
@@ -184,17 +164,17 @@ intersectSegHorzLine (x1, y1) (x2, y2) y0 =
           else Just ((y0 - y1) * (x2 - x1) / (y2 - y1) + x1, y0)
 
 ||| Get the point where a segment crosses a vertical line, if any.
---
--- @
---              |
---              |   + P1
---              | /
---              +
---            / |
---       P2 +   |
---              | x0
--- @
---
+|||
+|||
+|||              |
+|||              |   + P1
+|||              | /
+|||              +
+|||            / |
+|||       P2 +   |
+|||              | x0
+|||
+export
 intersectSegVertLine 
         : Point        -- ^ P1 First point of segment.
         -> Point        -- ^ P2 Second point of segment.
@@ -221,7 +201,8 @@ intersectSegVertLine (x1, y1) (x2, y2) x0 =
 -- Segment-Segment intersection -----------------------------------------------
 
 ||| Get the point where a segment @P1-P2@ crosses another segement @P3-P4@,
---   if any.
+|||   if any.
+export
 intersectSegSeg
         : Point        -- ^ `P1`
         -> Point        -- ^ `P2`
@@ -239,15 +220,14 @@ intersectSegSeg p1 p2 p3 p4 = do
     else Nothing
 
 ||| Check if an arbitrary segment intersects a horizontal segment.
---
--- @
---                 + P2
---                /
--- (xa, y3)  +---+----+ (xb, y3)
---              /
---          P1 +
--- @ 
-
+|||
+||| 
+|||                 + P2
+|||                /
+||| (xa, y3)  +---+----+ (xb, y3)
+|||              /
+|||          P1 +
+export
 intersectSegHorzSeg
          : Point        -- ^ P1 First point of segment.
         -> Point        -- ^ P2 Second point of segment.
@@ -270,16 +250,16 @@ intersectSegHorzSeg p1@(x1, y1) p2@(x2, y2) y0 xa xb =
           else (y0 - y1) * (x2 - x1) / (y2 - y1) + x1
 
 ||| Check if an arbitrary segment intersects a vertical segment.
---
--- @
---      (x3, yb) +
---               |   + P1
---               | /
---               +
---             / |
---        P2 +   |
---               + (x3, ya)
--- @ 
+|||
+||| 
+|||      (x3, yb) +
+|||               |   + P1
+|||               | /
+|||               +
+|||             / |
+|||        P2 +   |
+|||               + (x3, ya)
+export
 intersectSegVertSeg
         : Point        -- ^ P1 First point of segment.
         -> Point        -- ^ P2 Second point of segment.

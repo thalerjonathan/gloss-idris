@@ -2,17 +2,9 @@
 module Graphics.Gloss.Internals.Rendering.State
 
 import Data.IORef
+import Graphics.Gloss.Internals.Data.Picture
 import Graphics.Gloss.Internals.Rendering.Bitmap
 import Graphics.Rendering.Gl.Types
-
-{-
-import Graphics.Gloss.Internals.Data.Picture
-import Foreign.ForeignPtr
-import System.Mem.StableName
-import Data.Word
-import Data.IORef
-import qualified Graphics.Rendering.OpenGL.GL   as GL
--}
 
 ||| A texture that we've sent to OpenGL.
 public export

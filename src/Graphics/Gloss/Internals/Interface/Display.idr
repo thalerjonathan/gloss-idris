@@ -7,18 +7,15 @@ import Graphics.Gloss.Data.Controller
 import Graphics.Gloss.Data.Picture
 import Graphics.Gloss.Data.ViewPort
 import Graphics.Gloss.Data.ViewState
-import Graphics.Gloss.Rendering
 import Graphics.Gloss.Internals.Interface.Backend
-import Graphics.Gloss.Internals.Rendering.State
-
-{-
-import Graphics.Gloss.Internals.Interface.Window
+import Graphics.Gloss.Internals.Interface.Backend.Types
 import Graphics.Gloss.Internals.Interface.Common.Exit
 import Graphics.Gloss.Internals.Interface.ViewState.KeyMouse
 import Graphics.Gloss.Internals.Interface.ViewState.Motion
 import Graphics.Gloss.Internals.Interface.ViewState.Reshape
-import qualified Graphics.Gloss.Internals.Interface.Callback as Callback
--}
+import Graphics.Gloss.Internals.Interface.Window
+import Graphics.Gloss.Internals.Rendering.State
+import Graphics.Gloss.Rendering
 
 renderFun : Backend a 
           => IORef ViewState
@@ -40,14 +37,20 @@ renderFun viewSR renderSR background makePicture backendRef = do
           (viewPortScale port)
           (applyViewPortToPicture port picture)
 
+||| 
+||| @ backend       Initial state of the backend.
+||| @ displayMode   Display config.
+||| @ background    Background color.
+||| @ makePicture   Make the picture to draw.
+||| @ eatController Eat the controller
 export
 displayWithBackend
         : Backend a
-        => a                            -- ^ Initial state of the backend.
-        -> Display                      -- ^ Display config.
-        -> Color                        -- ^ Background color.
-        -> IO Picture                   -- ^ Make the picture to draw.
-        -> (Controller -> IO ())        -- ^ Eat the controller
+        => (backend : a)
+        -> (displayMode : Display)
+        -> (background : Color)
+        -> (makePicture : IO Picture)
+        -> (eatController : (Controller -> IO ()))
         -> IO ()
 displayWithBackend backend displayMode background makePicture eatController = do
   viewSR   <- newIORef viewStateInit

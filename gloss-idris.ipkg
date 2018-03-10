@@ -19,7 +19,8 @@ modules =   Graphics.Gloss.Rendering
 
           -- INTERFACE
           , Graphics.Gloss.Interface.IO.Display
-
+          , Graphics.Gloss.Interface.Pure.Display
+          
           -- internal stuff ---------------------------
           -- CODEC
           , Graphics.Gloss.Internals.Codec.PNG
@@ -38,12 +39,19 @@ modules =   Graphics.Gloss.Rendering
           , Graphics.Rendering.Gl.Gl41
           , Graphics.Rendering.Gl.Types
           -- INTERFACE
+          , Graphics.Gloss.Internals.Interface.Animate.State
           , Graphics.Gloss.Internals.Interface.Backend
+          , Graphics.Gloss.Internals.Interface.Backend.GLFW
+          , Graphics.Gloss.Internals.Interface.Backend.Types
+          , Graphics.Gloss.Internals.Interface.Common.Exit
           , Graphics.Gloss.Internals.Interface.Event
           , Graphics.Gloss.Internals.Interface.Display
-          --    BACKEND
-          , Graphics.Gloss.Internals.Interface.Backend.Types
-
+          , Graphics.Gloss.Internals.Interface.Debug
+          , Graphics.Gloss.Internals.Interface.Simulate.State
+          , Graphics.Gloss.Internals.Interface.ViewState.KeyMouse
+          , Graphics.Gloss.Internals.Interface.ViewState.Motion
+          , Graphics.Gloss.Internals.Interface.ViewState.Reshape
+          , Graphics.Gloss.Internals.Interface.Window
 
 pkgs = contrib
 
