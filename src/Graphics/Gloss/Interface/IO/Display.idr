@@ -48,14 +48,14 @@ import        Graphics.Gloss.Internals.Interface.Backend
 ||| @ eatController Callback to take the display controller.
 export
 displayIO : (displayMode : Display)
-        -> (backColor : Color)
-        -> (makePicture : IO Picture)
-        -> (eatController : (Controller -> IO ()))
-        -> IO ()
+          -> (backColor : Color)
+          -> (makePicture : IO Picture)
+          -> (eatController : (Controller -> IO ()))
+          -> IO ()
 displayIO displayMode backColor makePicture eatController
   = displayWithBackend
       defaultBackendState
-      dis
+      displayMode
       backColor
       makePicture
       eatController

@@ -1,5 +1,5 @@
 module Graphics.Gloss.Data.Controller
-       
+
 import Graphics.Gloss.Data.ViewPort
 
 ||| Functions to asynchronously control a `Gloss` display.
