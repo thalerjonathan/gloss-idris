@@ -173,6 +173,10 @@ MouseButtonCallback : Type
 MouseButtonCallback = MouseButton -> Bool -> IO ()
 
 public export
+MousePositionCallback : Type
+MousePositionCallback = Int -> Int -> IO ()
+
+public export
 MouseWheelCallback : Type
 MouseWheelCallback  = Int -> IO ()
 
@@ -239,3 +243,27 @@ setMouseButtonCallback clbk = ?setMouseButtonCallback
 export
 setMouseWheelCallback : MouseWheelCallback -> IO ()
 setMouseWheelCallback clbk = ?setMouseWheelCallback
+
+export
+setMousePositionCallback : MousePositionCallback -> IO ()
+setMousePositionCallback clbk = ?setMousePositionCallback
+
+export
+windowIsOpen : IO Bool
+windowIsOpen = ?windowIsOpen
+
+export
+pollEvents : IO ()
+pollEvents = ?pollEvents
+
+export
+swapBuffers : IO ()
+swapBuffers = ?swapBuffers
+
+export
+sleep : Double -> IO ()
+sleep = ?sleep
+
+export
+getTime : IO Double
+getTime = ?getTime

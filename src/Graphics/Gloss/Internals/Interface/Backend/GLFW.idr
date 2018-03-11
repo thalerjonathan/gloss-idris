@@ -335,101 +335,84 @@ installKeyMouseCallbackGLFW stateRef callbacks = do
   GLFW.setMouseButtonCallback $ (callbackMouseButton stateRef callbacks)
   GLFW.setMouseWheelCallback  $ (callbackMouseWheel  stateRef callbacks)
 
-{-
 -- Motion Callback ------------------------------------------------------------
--- | Callback for when the user moves the mouse.
-installMotionCallbackGLFW 
-        :: IORef GLFWState -> [Callback]
-        -> IO ()
+setMousePos : IORef GLFWState
+            -> Int 
+            -> Int
+            -> IO (Int, Int)
+setMousePos stateRef x y = do
+  let pos = (x,y)
 
+  modifyIORef stateRef $ \s => record 
+          { mousePosition = pos } s
+
+  pure pos
+
+callbackMotion : IORef GLFWState 
+               -> List Callback
+               -> Int 
+               -> Int
+               -> IO ()
+callbackMotion stateRef callbacks x y = do
+  pos <- setMousePos stateRef x y
+
+  -- Call all the Gloss Motion actions with the new state.
+  sequence_ 
+    $ map  (\f => f pos)
+          [f stateRef | Motion f <- callbacks]
+
+||| Callback for when the user moves the mouse.
+installMotionCallbackGLFW :  IORef GLFWState 
+                          -> List Callback
+                          -> IO ()
 installMotionCallbackGLFW stateRef callbacks
-        = GLFW.setMousePositionCallback $ (callbackMotion stateRef callbacks)
-
-callbackMotion 
-        :: IORef GLFWState -> [Callback]
-        -> Int -> Int
-        -> IO ()
-callbackMotion stateRef callbacks x y
- = do   pos <- setMousePos stateRef x y
-
-        -- Call all the Gloss Motion actions with the new state.
-        sequence_ 
-         $ map  (\f -> f pos)
-                [f stateRef | Motion f <- callbacks]
-
-setMousePos
-        :: IORef GLFWState
-        -> Int -> Int
-        -> IO (Int, Int)
-setMousePos stateRef x y
- = do   let pos = (x,y)
-
-        modifyIORef' stateRef $ \s -> s 
-                { mousePosition = pos }
-
-        return pos
-
+  = GLFW.setMousePositionCallback $ (callbackMotion stateRef callbacks)
 
 -- Idle Callback --------------------------------------------------------------
--- | Callback for when GLFW has finished its jobs and it's time for us to do
---   something for our application.
-installIdleCallbackGLFW
-        :: IORef GLFWState -> [Callback]
-        -> IO ()
-
-installIdleCallbackGLFW stateRef callbacks 
-        = modifyIORef' stateRef $ \s -> s 
-                { idle = callbackIdle stateRef callbacks }
-
-callbackIdle 
-        :: IORef GLFWState -> [Callback]
-        -> IO ()
-
+callbackIdle : IORef GLFWState -> List Callback -> IO ()
 callbackIdle stateRef callbacks
-        = sequence_
-        $ [f stateRef | Idle f <- callbacks]
+  = sequence_ $ [f stateRef | Idle f <- callbacks]
 
+||| Callback for when GLFW has finished its jobs and it's time for us to do
+|||   something for our application.
+installIdleCallbackGLFW : IORef GLFWState -> List Callback -> IO ()
+installIdleCallbackGLFW stateRef callbacks 
+  = modifyIORef stateRef $ \s => record
+          { idle = callbackIdle stateRef callbacks } s
 
 -- Main Loop ------------------------------------------------------------------
-runMainLoopGLFW
-        :: IORef GLFWState
-        -> IO ()
-
+runMainLoopGLFW : IORef GLFWState -> IO ()
 runMainLoopGLFW stateRef 
- = X.catch go exit
+    = X.catch go exit
  where
-  exit :: X.SomeException -> IO ()
+  exit : X.SomeException -> IO ()
   exit e = print e >> exitGLFW stateRef
 
-  go   :: IO ()
-  go 
-   = do windowIsOpen <- GLFW.windowIsOpen
-        when windowIsOpen 
-         $ do  GLFW.pollEvents
-               dirty <- fmap dirtyScreen $ readIORef stateRef
+  go : IO ()
+  go = do 
+    windowIsOpen <- GLFW.windowIsOpen
+    when windowIsOpen 
+      $ do  
+        GLFW.pollEvents
+        dirty <- fmap dirtyScreen $ readIORef stateRef
 
-               when dirty
-                $ do   s <- readIORef stateRef
-                       display s
-                       GLFW.swapBuffers
+        when dirty
+          $ do  
+            s <- readIORef stateRef
+            display s
+            GLFW.swapBuffers
 
-               modifyIORef' stateRef $ \s -> s 
-                        { dirtyScreen = False }
+        modifyIORef stateRef $ \s => record 
+                { dirtyScreen = False } s
 
-               (readIORef stateRef) >>= (\s -> idle s)
-               GLFW.sleep 0.001
-               runMainLoopGLFW stateRef
-
+        (readIORef stateRef) >>= (\s => idle s)
+        GLFW.sleep 0.001
+        runMainLoopGLFW stateRef
 
 -- Redisplay ------------------------------------------------------------------
-postRedisplayGLFW 
-        :: IORef GLFWState
-        -> IO ()
-
+postRedisplayGLFW : IORef GLFWState -> IO ()
 postRedisplayGLFW stateRef
-        = modifyIORef' stateRef $ \s -> s 
-                { dirtyScreen = True }
--}
+  = modifyIORef stateRef $ \s => record { dirtyScreen = True } s
 
 public export
 Backend GLFWState where
@@ -444,18 +427,17 @@ Backend GLFWState where
   installKeyMouseCallback    = installKeyMouseCallbackGLFW
   installMotionCallback      = ?installMotionCallbackGLFW
   installIdleCallback        = ?installIdleCallbackGLFW
-  runMainLoop                = ?runMainLoopGLFW
-  postRedisplay              = ?postRedisplayGLFW
-  getWindowDimensions        = ?getWindowDimensions -- (\_     -> GLFW.getWindowDimensions)
-  elapsedTime                = ?elapsedTime --(\_     -> GLFW.getTime)
-  sleep                      = ?sleep --(\_ sec -> GLFW.sleep sec)
+  runMainLoop                = runMainLoopGLFW
+  postRedisplay              = postRedisplayGLFW
+  getWindowDimensions        = (\_ => GLFW.getWindowDimensions)
+  elapsedTime                = (\_ => GLFW.getTime)
+  sleep                      = (\_ sec => GLFW.sleep sec)
 
-{-
 -- Key Code Conversion --------------------------------------------------------
-class GLFWKey a where
+interface GLFWKey a where
   fromGLFW :: a -> Key
 
-instance GLFWKey GLFW.Key where
+GLFWKey GLFW.Key where
   fromGLFW key 
    = case key of
         GLFW.CharKey c      -> charToSpecial (toLower c)
@@ -518,13 +500,12 @@ instance GLFWKey GLFW.Key where
         GLFW.KeyPadEnter    -> SpecialKey KeyPadEnter
         _                   -> SpecialKey KeyUnknown
 
-
 -- | Convert char keys to special keys to work around a bug in 
 --   GLFW 2.7. On OS X, GLFW sometimes registers special keys as char keys,
 --   so we convert them back here.
 --   GLFW 2.7 is current as of Nov 2011, and is shipped with the Hackage
 --   binding GLFW-b 0.2.*
-charToSpecial :: Char -> Key
+charToSpecial : Char -> Key
 charToSpecial c = case (fromEnum c) of
         32    -> SpecialKey KeySpace
         63232 -> SpecialKey KeyUp
@@ -551,7 +532,7 @@ charToSpecial c = case (fromEnum c) of
         63277 -> SpecialKey KeyPageDown
         _     -> Char c
 
-instance GLFWKey GLFW.MouseButton where
+GLFWKey GLFW.MouseButton where
   fromGLFW mouse
    = case mouse of
         GLFW.MouseButton0 -> MouseButton LeftButton
@@ -562,4 +543,3 @@ instance GLFWKey GLFW.MouseButton where
         GLFW.MouseButton5 -> MouseButton $ AdditionalButton 5
         GLFW.MouseButton6 -> MouseButton $ AdditionalButton 6
         GLFW.MouseButton7 -> MouseButton $ AdditionalButton 7
--}
