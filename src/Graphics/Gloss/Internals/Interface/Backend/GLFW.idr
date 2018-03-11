@@ -218,138 +218,124 @@ installReshapeCallbackGLFW : Backend a => IORef a -> List Callback -> IO ()
 installReshapeCallbackGLFW stateRef callbacks
   = GLFW.setWindowSizeCallback (callbackReshape stateRef callbacks)
 
-{-
+
 -- KeyMouse -----------------------------------------------------------------------
--- | Callbacks for when the user presses a key or moves / clicks the mouse.
---   This is a bit verbose because we have to do impedence matching between
---   GLFW's event system, and the one use by Gloss which was originally
---   based on GLUT. The main problem is that GLUT only provides a single callback
---   slot for character keys, arrow keys, mouse buttons and mouse wheel movement, 
---   while GLFW provides a single slot for each.
---
-installKeyMouseCallbackGLFW
-        :: IORef GLFWState -> [Callback]
-        -> IO ()
-
-installKeyMouseCallbackGLFW stateRef callbacks
- = do   GLFW.setKeyCallback         $ (callbackKeyboard    stateRef callbacks)
-        GLFW.setCharCallback        $ (callbackChar        stateRef callbacks)
-        GLFW.setMouseButtonCallback $ (callbackMouseButton stateRef callbacks)
-        GLFW.setMouseWheelCallback  $ (callbackMouseWheel  stateRef callbacks)
-
-
--- GLFW calls this on a non-character keyboard action.
-callbackKeyboard 
-        :: IORef GLFWState -> [Callback]
-        -> GLFW.Key -> Bool
-        -> IO ()
-
-callbackKeyboard stateRef callbacks key keystate
- = do   (modsSet, GLFWState mods pos _ _ _ _)
-                <- setModifiers stateRef key keystate     
-        let key'      = fromGLFW key
-        let keystate' = if keystate then Down else Up
-        let isCharKey (Char _) = True
-            isCharKey _        = False
-
-        -- Call the Gloss KeyMouse actions with the new state.
-        unless (modsSet || isCharKey key' && keystate)
-         $ sequence_ 
-         $ map  (\f -> f key' keystate' mods pos)
-                [f stateRef | KeyMouse f <- callbacks]
-
-
 setModifiers 
-        :: IORef GLFWState
+        : IORef GLFWState
         -> GLFW.Key -> Bool
         -> IO (Bool, GLFWState)
+setModifiers stateRef key pressed = do
+  glfwState <- readIORef stateRef
+  let mods  = modifiers glfwState
+  let mods' = case key of
+          GLFW.KeyLeftShift => mods {shift = if pressed then Down else Up}
+          GLFW.KeyLeftCtrl  => mods {ctrl  = if pressed then Down else Up}
+          GLFW.KeyLeftAlt   => mods {alt   = if pressed then Down else Up}
+          _                 => mods
 
-setModifiers stateRef key pressed
- = do   glfwState <- readIORef stateRef
-        let mods  = modifiers glfwState
-        let mods' = case key of
-                GLFW.KeyLeftShift -> mods {shift = if pressed then Down else Up}
-                GLFW.KeyLeftCtrl  -> mods {ctrl  = if pressed then Down else Up}
-                GLFW.KeyLeftAlt   -> mods {alt   = if pressed then Down else Up}
-                _                 -> mods
+  if (mods' /= mods)
+    then do
+      let glfwState' = glfwState {modifiers = mods'}
+      writeIORef stateRef glfwState'
+      pure (True, glfwState')
+    else return (False, glfwState)
 
-        if (mods' /= mods)
-         then do
-                let glfwState' = glfwState {modifiers = mods'}
-                writeIORef stateRef glfwState'
-                return (True, glfwState')
-         else return (False, glfwState)
+-- GLFW calls this on a non-character keyboard action.
+callbackKeyboard :  IORef GLFWState 
+                 -> List Callback
+                 -> GLFW.Key 
+                 -> Bool
+                 -> IO ()
+callbackKeyboard stateRef callbacks key keystate = do
+  (modsSet, GLFWState mods pos _ _ _ _) <- setModifiers stateRef key keystate     
+  let key'      = fromGLFW key
+  let keystate' = if keystate then Down else Up
+  let isCharKey (Char _) = True
+      isCharKey _        = False
 
+  -- Call the Gloss KeyMouse actions with the new state.
+  unless (modsSet || isCharKey key' && keystate)
+    $ sequence_ 
+    $ map  (\f => f key' keystate' mods pos)
+          [f stateRef | KeyMouse f <- callbacks]
 
 -- GLFW calls this on a when the user presses or releases a character key.
-callbackChar 
-        :: IORef GLFWState -> [Callback]
-        -> Char -> Bool -> IO ()
+callbackChar : IORef GLFWState 
+             -> List Callback
+             -> Char 
+             -> Bool 
+             -> IO ()
+callbackChar stateRef callbacks char keystate = do
+  (GLFWState mods pos _ _ _ _) <- readIORef stateRef
+  let key'      = charToSpecial char
+  -- Only key presses of characters are passed to this callback,
+  -- character key releases are caught by the 'keyCallback'. This is an
+  -- intentional feature of GLFW. What this means that a key press of
+  -- the '>' char  (on a US Intl keyboard) is captured by this callback,
+  -- but a release is captured as a '.' with the shift-modifier in the
+  -- keyCallback.
+  let keystate' = if keystate then Down else Up
 
-callbackChar stateRef callbacks char keystate
- = do   (GLFWState mods pos _ _ _ _) <- readIORef stateRef
-        let key'      = charToSpecial char
-        -- Only key presses of characters are passed to this callback,
-        -- character key releases are caught by the 'keyCallback'. This is an
-        -- intentional feature of GLFW. What this means that a key press of
-        -- the '>' char  (on a US Intl keyboard) is captured by this callback,
-        -- but a release is captured as a '.' with the shift-modifier in the
-        -- keyCallback.
-        let keystate' = if keystate then Down else Up
-
-        -- Call all the Gloss KeyMouse actions with the new state.
-        sequence_ 
-         $ map  (\f -> f key' keystate' mods pos) 
-                [f stateRef | KeyMouse f <- callbacks]
-
+  -- Call all the Gloss KeyMouse actions with the new state.
+  sequence_ 
+    $ map  (\f => f key' keystate' mods pos) 
+          [f stateRef | KeyMouse f <- callbacks]
 
 -- GLFW calls on this when the user clicks or releases a mouse button.
-callbackMouseButton 
-        :: IORef GLFWState -> [Callback]
-        -> GLFW.MouseButton
-        -> Bool
-        -> IO ()
+callbackMouseButton : IORef GLFWState -> List Callback
+                    -> GLFW.MouseButton
+                    -> Bool
+                    -> IO ()
+callbackMouseButton stateRef callbacks key keystate = do
+  (GLFWState mods pos _ _ _ _) <- readIORef stateRef
+  let key'      = fromGLFW key
+  let keystate' = if keystate then Down else Up
 
-callbackMouseButton stateRef callbacks key keystate
- = do   (GLFWState mods pos _ _ _ _) <- readIORef stateRef
-        let key'      = fromGLFW key
-        let keystate' = if keystate then Down else Up
-
-        -- Call all the Gloss KeyMouse actions with the new state.
-        sequence_ 
-         $ map  (\f -> f key' keystate' mods pos)
-                [f stateRef | KeyMouse f <- callbacks]
-
+  -- Call all the Gloss KeyMouse actions with the new state.
+  sequence_ 
+    $ map  (\f => f key' keystate' mods pos)
+          [f stateRef | KeyMouse f <- callbacks]
 
 -- GLFW calls on this when the user moves the mouse wheel.
-callbackMouseWheel
-        :: IORef GLFWState -> [Callback]
-        -> Int
-        -> IO ()
+callbackMouseWheel :  IORef GLFWState 
+                   -> List Callback
+                   -> Int
+                   -> IO ()
+callbackMouseWheel stateRef callbacks w = do
+  (key, keystate)  <- setMouseWheel stateRef w
+  (GLFWState mods pos _ _ _ _) <- readIORef stateRef
 
-callbackMouseWheel stateRef callbacks w
- = do   (key, keystate)  <- setMouseWheel stateRef w
-        (GLFWState mods pos _ _ _ _) <- readIORef stateRef
+  -- Call all the Gloss KeyMouse actions with the new state.
+  sequence_ 
+    $ map  (\f => f key keystate mods pos)
+          [f stateRef | KeyMouse f <- callbacks]
 
-        -- Call all the Gloss KeyMouse actions with the new state.
-        sequence_ 
-         $ map  (\f -> f key keystate mods pos)
-                [f stateRef | KeyMouse f <- callbacks]
+setMouseWheel : IORef GLFWState
+              -> Int
+              -> IO (Key, KeyState)
+setMouseWheel stateRef w = do
+  glfwState <- readIORef stateRef
+  writeIORef stateRef $ glfwState {mouseWheelPos = w}
+  case compare w (mouseWheelPos glfwState) of
+        LT => pure (MouseButton WheelDown , Down)
+        GT => pure (MouseButton WheelUp   , Down)
+        EQ => pure (SpecialKey  KeyUnknown, Up  )
 
-setMouseWheel
-        :: IORef GLFWState
-        -> Int
-        -> IO (Key, KeyState)
+||| Callbacks for when the user presses a key or moves / clicks the mouse.
+|||   This is a bit verbose because we have to do impedence matching between
+|||   GLFW's event system, and the one use by Gloss which was originally
+|||   based on GLUT. The main problem is that GLUT only provides a single callback
+|||   slot for character keys, arrow keys, mouse buttons and mouse wheel movement, 
+|||   while GLFW provides a single slot for each.
+|||
+installKeyMouseCallbackGLFW : IORef GLFWState -> List Callback -> IO ()
+installKeyMouseCallbackGLFW stateRef callbacks = do
+  GLFW.setKeyCallback         $ (callbackKeyboard    stateRef callbacks)
+  GLFW.setCharCallback        $ (callbackChar        stateRef callbacks)
+  GLFW.setMouseButtonCallback $ (callbackMouseButton stateRef callbacks)
+  GLFW.setMouseWheelCallback  $ (callbackMouseWheel  stateRef callbacks)
 
-setMouseWheel stateRef w
- = do   glfwState <- readIORef stateRef
-        writeIORef stateRef $ glfwState {mouseWheelPos = w}
-        case compare w (mouseWheelPos glfwState) of
-                LT -> return (MouseButton WheelDown , Down)
-                GT -> return (MouseButton WheelUp   , Down)
-                EQ -> return (SpecialKey  KeyUnknown, Up  )
-
-
+{-
 -- Motion Callback ------------------------------------------------------------
 -- | Callback for when the user moves the mouse.
 installMotionCallbackGLFW 
@@ -454,8 +440,8 @@ Backend GLFWState where
   dumpBackendState           = dumpStateGLFW
   installDisplayCallback     = installDisplayCallbackGLFW
   installWindowCloseCallback = installWindowCloseCallbackGLFW
-  installReshapeCallback     = ?installReshapeCallbackGLFW
-  installKeyMouseCallback    = ?installKeyMouseCallbackGLFW
+  installReshapeCallback     = installReshapeCallbackGLFW
+  installKeyMouseCallback    = installKeyMouseCallbackGLFW
   installMotionCallback      = ?installMotionCallbackGLFW
   installIdleCallback        = ?installIdleCallbackGLFW
   runMainLoop                = ?runMainLoopGLFW

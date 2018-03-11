@@ -52,6 +52,79 @@ data WindowValue
   | NumAuxBuffers
   | NumFsaaSamples
 
+public export
+data Key
+  = CharKey Char
+  | KeyUnknown
+  | KeySpace
+  | KeySpecial
+  | KeyEsc
+  | KeyF1
+  | KeyF2
+  | KeyF3
+  | KeyF4
+  | KeyF5
+  | KeyF6
+  | KeyF7
+  | KeyF8
+  | KeyF9
+  | KeyF10
+  | KeyF11
+  | KeyF12
+  | KeyF13
+  | KeyF14
+  | KeyF15
+  | KeyF16
+  | KeyF17
+  | KeyF18
+  | KeyF19
+  | KeyF20
+  | KeyF21
+  | KeyF22
+  | KeyF23
+  | KeyF24
+  | KeyF25
+  | KeyUp
+  | KeyDown
+  | KeyLeft
+  | KeyRight
+  | KeyLeftShift
+  | KeyRightShift
+  | KeyLeftCtrl
+  | KeyRightCtrl
+  | KeyLeftAlt
+  | KeyRightAlt
+  | KeyTab
+  | KeyEnter
+  | KeyBackspace
+  | KeyInsert
+  | KeyDel
+  | KeyPageup
+  | KeyPagedown
+  | KeyHome
+  | KeyEnd
+  | KeyPad0
+  | KeyPad1
+  | KeyPad2
+  | KeyPad3
+  | KeyPad4
+  | KeyPad5
+  | KeyPad6
+  | KeyPad7
+  | KeyPad8
+  | KeyPad9
+  | KeyPadDivide
+  | KeyPadMultiply
+  | KeyPadSubtract
+  | KeyPadAdd
+  | KeyPadDecimal
+  | KeyPadEqual
+  | KeyPadEnter
+
+data MouseButton
+  = MouseButton0 | MouseButton1 | MouseButton2 | MouseButton3
+  | MouseButton4 | MouseButton5 | MouseButton6 | MouseButton7
+
 export
 defaultDisplayOptions : DisplayOptions
 defaultDisplayOptions =
@@ -86,6 +159,22 @@ WindowCloseCallback = IO Bool
 public export
 WindowSizeCallback : Type 
 WindowSizeCallback = Int -> Int -> IO ()
+
+public export
+CharCallback : Type 
+CharCallback = Char -> Bool -> IO ()
+
+public export
+KeyCallback : Type
+KeyCallback = Key -> Bool -> IO ()
+
+public export
+MouseButtonCallback : Type
+MouseButtonCallback = MouseButton -> Bool -> IO ()
+
+public export
+MouseWheelCallback : Type
+MouseWheelCallback  = Int -> IO ()
 
 export
 initialize : IO ()
@@ -134,3 +223,19 @@ setWindowCloseCallback clbk = ?setWindowCloseCallback
 export
 setWindowSizeCallback : WindowSizeCallback -> IO ()
 setWindowSizeCallback clbk = ?setWindowSizeCallback
+
+export
+setKeyCallback : KeyCallback -> IO ()
+setKeyCallback clbk = ?setKeyCallback
+
+export
+setCharCallback : CharCallback -> IO ()
+setCharCallback clbk = ?setCharCallback
+
+export
+setMouseButtonCallback : MouseButtonCallback -> IO ()
+setMouseButtonCallback clbk = ?setMouseButtonCallback
+
+export
+setMouseWheelCallback : MouseWheelCallback -> IO ()
+setMouseWheelCallback clbk = ?setMouseWheelCallback
