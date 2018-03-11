@@ -6,6 +6,10 @@ import Data.IORef
 import Graphics.Gloss.Data.Display
 import Graphics.Gloss.Internals.Interface.Backend.Types
 
+import Graphics.Rendering.Gl.Gl41 as GL
+import Graphics.UI.GLFW.GLFW      as GLFW
+
+
 {-
 import Data.Char                           (toLower)
 import Control.Monad
@@ -51,7 +55,6 @@ record GLFWState where
   idle          : IO ()
 
 ||| Initial GLFW state.
-export
 glfwStateInit : GLFWState
 glfwStateInit
   = MkGLFWState
@@ -62,189 +65,160 @@ glfwStateInit
       (pure ())
       (pure ())
 
-public export
-Backend GLFWState where
-  initBackendState           = ?glfwStateInit
-  initializeBackend          = ?initializeGLFW
-  exitBackend                = ?exitGLFW
-  openWindow                 = ?openWindowGLFW
-  dumpBackendState           = ?dumpStateGLFW
-  installDisplayCallback     = ?installDisplayCallbackGLFW
-  installWindowCloseCallback = ?installWindowCloseCallbackGLFW
-  installReshapeCallback     = ?installReshapeCallbackGLFW
-  installKeyMouseCallback    = ?installKeyMouseCallbackGLFW
-  installMotionCallback      = ?installMotionCallbackGLFW
-  installIdleCallback        = ?installIdleCallbackGLFW
-  runMainLoop                = ?runMainLoopGLFW
-  postRedisplay              = ?postRedisplayGLFW
-  getWindowDimensions        = ?getWindowDimensions -- (\_     -> GLFW.getWindowDimensions)
-  elapsedTime                = ?elapsedTime --(\_     -> GLFW.getTime)
-  sleep                      = ?sleep --(\_ sec -> GLFW.sleep sec)
+||| Initialise -----------------------------------------------------------------
+|||  Initialise the GLFW backend.
+initializeGLFW : IORef GLFWState -> Bool-> IO ()
+initializeGLFW _ debug = do
+  _           <- GLFW.initialize
+  glfwVersion <- GLFW.getGlfwVersion
 
 {-
--- Initialise -----------------------------------------------------------------
--- | Initialise the GLFW backend.
-initializeGLFW :: IORef GLFWState -> Bool-> IO ()
-initializeGLFW _ debug
- = do
-        _                   <- GLFW.initialize
-        glfwVersion         <- GLFW.getGlfwVersion
-
 #ifdef linux_HOST_OS
 -- See [Note: FreeGlut] for why we need this.
         (_progName, _args)  <- GLUT.getArgsAndInitialize
 #endif
-
-        when debug
-         $ putStr  $ "  glfwVersion        = " ++ show glfwVersion   ++ "\n"
+-}
+  when debug
+    (putStr  $ "  glfwVersion        = " ++ show glfwVersion   ++ "\n")
 
 
 -- Exit -----------------------------------------------------------------------
--- | Tell the GLFW backend to close the window and exit.
-exitGLFW :: IORef GLFWState -> IO ()
-exitGLFW _
- = do
+||| Tell the GLFW backend to close the window and exit.
+exitGLFW : IORef GLFWState -> IO ()
+exitGLFW _ = do
+{-}
 #ifdef linux_HOST_OS
 -- See [Note: FreeGlut] on why we exit GLUT for Linux
         GLUT.exit
 #endif
-        GLFW.closeWindow
-
+-}
+  GLFW.closeWindow
 
 -- Open Window ----------------------------------------------------------------
--- | Open a new window.
-openWindowGLFW 
-        :: IORef GLFWState
-        -> Display
-        -> IO ()
+||| Open a new window.
+openWindowGLFW : IORef GLFWState
+               -> Display
+               -> IO ()
+openWindowGLFW _ (InWindow title (sizeX, sizeY) pos) = do
+  let disp = record 
+    { displayOptions_width        = sizeX
+    , displayOptions_height       = sizeY
+    , displayOptions_displayMode  = GLFW.Window } GLFW.defaultDisplayOptions
 
-openWindowGLFW _ (InWindow title (sizeX, sizeY) pos)
- = do   _ <- GLFW.openWindow
-                GLFW.defaultDisplayOptions
-                 { GLFW.displayOptions_width        = sizeX
-                 , GLFW.displayOptions_height       = sizeY
-                 , GLFW.displayOptions_displayMode  = GLFW.Window }
-        
-        uncurry GLFW.setWindowPosition pos
-        GLFW.setWindowTitle title
+  _ <- GLFW.openWindow disp
 
-        -- Try to enable sync-to-vertical-refresh by setting the number 
-        -- of buffer swaps per vertical refresh to 1.
-        GLFW.setWindowBufferSwapInterval 1
+  uncurry GLFW.setWindowPosition pos
+  GLFW.setWindowTitle title
 
-openWindowGLFW _ (FullScreen (sizeX, sizeY))
- = do   _ <- GLFW.openWindow
-                GLFW.defaultDisplayOptions
-                 { GLFW.displayOptions_width        = sizeX
-                 , GLFW.displayOptions_height       = sizeY
-                 , GLFW.displayOptions_displayMode  = GLFW.Fullscreen }
-        
-        -- Try to enable sync-to-vertical-refresh by setting the number 
-        -- of buffer swaps per vertical refresh to 1.
-        GLFW.setWindowBufferSwapInterval 1
-        GLFW.enableMouseCursor
+  -- Try to enable sync-to-vertical-refresh by setting the number 
+  -- of buffer swaps per vertical refresh to 1.
+  GLFW.setWindowBufferSwapInterval 1
+
+-- TODO: really no idea where (sizeX, sizeY) comes from at this point, they don't show up in the type
+openWindowGLFW _ (FullScreen) = do --(sizeX, sizeY)) = do
+  let disp = record 
+    { --displayOptions_width        = sizeX
+    --, displayOptions_height       = sizeY
+     displayOptions_displayMode  = GLFW.Fullscreen } GLFW.defaultDisplayOptions
+
+  _ <- GLFW.openWindow disp
+
+  -- Try to enable sync-to-vertical-refresh by setting the number 
+  -- of buffer swaps per vertical refresh to 1.
+  GLFW.setWindowBufferSwapInterval 1
+  GLFW.enableMouseCursor
 
 -- Dump State -----------------------------------------------------------------
--- | Print out the internal GLFW state.
-dumpStateGLFW :: IORef a -> IO ()
-dumpStateGLFW _
- = do   (ww,wh)     <- GLFW.getWindowDimensions
+||| Print out the internal GLFW state.
+dumpStateGLFW : IORef a -> IO ()
+dumpStateGLFW _ = do
+  (ww,wh)     <- GLFW.getWindowDimensions
 
-        r           <- GLFW.getWindowValue NumRedBits
-        g           <- GLFW.getWindowValue NumGreenBits
-        b           <- GLFW.getWindowValue NumBlueBits
-        a           <- GLFW.getWindowValue NumAlphaBits
-        let rgbaBD  = [r,g,b,a]
+  r           <- GLFW.getWindowValue NumRedBits
+  g           <- GLFW.getWindowValue NumGreenBits
+  b           <- GLFW.getWindowValue NumBlueBits
+  a           <- GLFW.getWindowValue NumAlphaBits
+  let rgbaBD  = [r,g,b,a]
 
-        depthBD     <- GLFW.getWindowValue NumDepthBits
+  depthBD     <- GLFW.getWindowValue NumDepthBits
 
-        ra          <- GLFW.getWindowValue NumAccumRedBits
-        ga          <- GLFW.getWindowValue NumAccumGreenBits
-        ba          <- GLFW.getWindowValue NumAccumBlueBits
-        aa          <- GLFW.getWindowValue NumAccumAlphaBits
-        let accumBD = [ra,ga,ba,aa]
+  ra          <- GLFW.getWindowValue NumAccumRedBits
+  ga          <- GLFW.getWindowValue NumAccumGreenBits
+  ba          <- GLFW.getWindowValue NumAccumBlueBits
+  aa          <- GLFW.getWindowValue NumAccumAlphaBits
+  let accumBD = [ra,ga,ba,aa]
 
-        stencilBD   <- GLFW.getWindowValue NumStencilBits
+  stencilBD   <- GLFW.getWindowValue NumStencilBits
 
-        auxBuffers  <- GLFW.getWindowValue NumAuxBuffers
+  auxBuffers  <- GLFW.getWindowValue NumAuxBuffers
 
-        fsaaSamples <- GLFW.getWindowValue NumFsaaSamples
+  fsaaSamples <- GLFW.getWindowValue NumFsaaSamples
 
-        putStr  $ "* dumpGlfwState\n"
-                ++ " windowWidth  = " ++ show ww          ++ "\n"
-                ++ " windowHeight = " ++ show wh          ++ "\n"
-                ++ " depth rgba   = " ++ show rgbaBD      ++ "\n"
-                ++ " depth        = " ++ show depthBD     ++ "\n"
-                ++ " accum        = " ++ show accumBD     ++ "\n"
-                ++ " stencil      = " ++ show stencilBD   ++ "\n"
-                ++ " aux Buffers  = " ++ show auxBuffers  ++ "\n"
-                ++ " FSAA Samples = " ++ show fsaaSamples ++ "\n"
-                ++ "\n"
+  putStr  $ "* dumpGlfwState\n"
+          ++ " windowWidth  = " ++ show ww          ++ "\n"
+          ++ " windowHeight = " ++ show wh          ++ "\n"
+          ++ " depth rgba   = " ++ show rgbaBD      ++ "\n"
+          ++ " depth        = " ++ show depthBD     ++ "\n"
+          ++ " accum        = " ++ show accumBD     ++ "\n"
+          ++ " stencil      = " ++ show stencilBD   ++ "\n"
+          ++ " aux Buffers  = " ++ show auxBuffers  ++ "\n"
+          ++ " FSAA Samples = " ++ show fsaaSamples ++ "\n"
+          ++ "\n"
 
 
 -- Display Callback -----------------------------------------------------------
--- | Callback for when GLFW needs us to redraw the contents of the window.
-installDisplayCallbackGLFW
-        :: IORef GLFWState -> [Callback] -> IO ()
-
+||| Callback for when GLFW needs us to redraw the contents of the window.
+installDisplayCallbackGLFW : IORef GLFWState -> [Callback] -> IO ()
 installDisplayCallbackGLFW stateRef callbacks
- =  modifyIORef' stateRef $ \s -> s
-        { display = callbackDisplay stateRef callbacks }
-
-
+  = modifyIORef stateRef $ \s => record { display = callbackDisplay stateRef callbacks } s
+ 
 callbackDisplay
-        :: IORef GLFWState -> [Callback]
+        : IORef GLFWState -> [Callback]
         -> IO ()
+callbackDisplay stateRef callbacks = do
+  -- clear the display
+  -- GL.clear [GL.ColorBuffer, GL.DepthBuffer]
+  -- GL.color $ GL.Color4 0 0 0 (1 :: GL.GLfloat)
 
-callbackDisplay stateRef callbacks
- = do  -- clear the display
-        GL.clear [GL.ColorBuffer, GL.DepthBuffer]
-        GL.color $ GL.Color4 0 0 0 (1 :: GL.GLfloat)
+  GL.glClear GL_COLOR_BUFFER_BIT
+  GL.glClear GL_DEPTH_BUFFER_BIT
+  GL.glClearColor 0 0 0 1
 
-        -- get the display callbacks from the chain
-        let funs  = [f stateRef | (Display f) <- callbacks]
-        sequence_ funs
+  -- get the display callbacks from the chain
+  let funs  = [f stateRef | (Display f) <- callbacks]
+  sequence_ funs
 
-        return ()
-
+  pure ()
 
 -- Close Callback -------------------------------------------------------------
--- | Callback for when the user closes the window.
+||| Callback for when the user closes the window.
 --   We can do some cleanup here.
-installWindowCloseCallbackGLFW 
-        :: IORef GLFWState -> IO ()
-
+installWindowCloseCallbackGLFW  : IORef GLFWState -> IO ()
 installWindowCloseCallbackGLFW _
- = GLFW.setWindowCloseCallback 
- $ do
+  = GLFW.setWindowCloseCallback (pure True)
+{-}
 #ifdef linux_HOST_OS
 -- See [Note: FreeGlut] for why we need this.
         GLUT.exit
 #endif
-        return True
-
+-}
 
 -- Reshape --------------------------------------------------------------------
--- | Callback for when the user reshapes the window.
-installReshapeCallbackGLFW
-        :: Backend a
-        => IORef a -> [Callback] -> IO ()
-
-installReshapeCallbackGLFW stateRef callbacks
-        = GLFW.setWindowSizeCallback (callbackReshape stateRef callbacks)
-
-callbackReshape 
-        :: Backend a
-        => IORef a -> [Callback]
-        -> Int -> Int
-        -> IO ()
-
+callbackReshape : Backend a
+                => IORef a -> [Callback]
+                -> Int -> Int
+                -> IO ()
 callbackReshape glfwState callbacks sizeX sizeY
   = sequence_
-  $ map   (\f -> f (sizeX, sizeY))
-    [f glfwState | Reshape f  <- callbacks]
+  $ map (\f => f (sizeX, sizeY))
+    [f glfwState | Reshape f <- callbacks]
 
+||| Callback for when the user reshapes the window.
+installReshapeCallbackGLFW : Backend a => IORef a -> List Callback -> IO ()
+installReshapeCallbackGLFW stateRef callbacks
+  = GLFW.setWindowSizeCallback (callbackReshape stateRef callbacks)
 
+{-
 -- KeyMouse -----------------------------------------------------------------------
 -- | Callbacks for when the user presses a key or moves / clicks the mouse.
 --   This is a bit verbose because we have to do impedence matching between
@@ -469,8 +443,28 @@ postRedisplayGLFW
 postRedisplayGLFW stateRef
         = modifyIORef' stateRef $ \s -> s 
                 { dirtyScreen = True }
+-}
 
+public export
+Backend GLFWState where
+  initBackendState           = glfwStateInit
+  initializeBackend          = initializeGLFW
+  exitBackend                = exitGLFW
+  openWindow                 = openWindowGLFW
+  dumpBackendState           = dumpStateGLFW
+  installDisplayCallback     = installDisplayCallbackGLFW
+  installWindowCloseCallback = installWindowCloseCallbackGLFW
+  installReshapeCallback     = ?installReshapeCallbackGLFW
+  installKeyMouseCallback    = ?installKeyMouseCallbackGLFW
+  installMotionCallback      = ?installMotionCallbackGLFW
+  installIdleCallback        = ?installIdleCallbackGLFW
+  runMainLoop                = ?runMainLoopGLFW
+  postRedisplay              = ?postRedisplayGLFW
+  getWindowDimensions        = ?getWindowDimensions -- (\_     -> GLFW.getWindowDimensions)
+  elapsedTime                = ?elapsedTime --(\_     -> GLFW.getTime)
+  sleep                      = ?sleep --(\_ sec -> GLFW.sleep sec)
 
+{-
 -- Key Code Conversion --------------------------------------------------------
 class GLFWKey a where
   fromGLFW :: a -> Key
