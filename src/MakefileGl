@@ -1,15 +1,14 @@
 CC = gcc
-CFLAGS = `idris --include` `pkg-config --cflags glew libpng`
+CFLAGS = `idris --include` `pkg-config --cflags glew libpng glfw3`
 
 gl_idris.o: config gl_idris.c gl_idris.h 
 
-# on mac we have to include the frameworks. On linux it should be -lGL (or so I guess)
 config: .PHONY
 	echo "%flag C \"`pkg-config --cflags glew libpng`\"" > Graphics/Rendering/Gl/Config.idr
 	echo "%flag C \"`pkg-config --libs glew libpng`\"" >> Graphics/Rendering/Gl/Config.idr
-	#echo "%flag C \"`pkg-config --libs --cflags libpng`\"" >> Graphics/Rendering/Gl/Config.idr
-	#echo "%flag C \"-framework OpenGL\"" >> Graphics/Rendering/Gl/Config.idr
-	echo "%flag C \"OpenGL -framework\"" >> Graphics/Rendering/Gl/Config.idr
+
+	echo "%flag C \"`pkg-config --cflags glfw3`\"" > Graphics/UI/GLFW/GlfwConfig.idr
+	echo "%flag C \"`pkg-config --libs glfw3`\"" >> Graphics/UI/GLFW/GlfwConfig.idr
 clean: .PHONY
 	rm gl_idris.o
 

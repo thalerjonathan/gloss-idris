@@ -1,5 +1,11 @@
 module Graphics.UI.GLFW.GLFW
 
+import Graphics.Rendering.Gl.Buffers
+
+import public Graphics.UI.GLFW.GlfwConfig
+
+%include C "GLFW/glfw3.h"
+
 public export
 data DisplayMode
   = Window
@@ -182,16 +188,34 @@ MouseWheelCallback : Type
 MouseWheelCallback  = Int -> IO ()
 
 export
-initialize : IO ()
-initialize = ?initialize
+initialize : IO Bool
+initialize = do
+  ret <- foreign FFI_C "glfwInit" (IO Int)
+  pure $ if ret == 1 then True else False
 
 export
 getGlfwVersion : IO String
-getGlfwVersion = ?getGlfwVersion
+getGlfwVersion = do
+  majPtr <- intBuffer 1
+  minPtr <- intBuffer 1
+  revPtr <- intBuffer 1
+
+  foreign FFI_C "glfwGetVersion" (Ptr -> Ptr -> Ptr -> IO ()) majPtr minPtr revPtr
+
+  maj <- readInt majPtr 0 
+  min <- readInt majPtr 0
+  rev <- readInt majPtr 0
+
+  free majPtr
+  free minPtr
+  free revPtr
+
+  pure $ show maj ++ "." ++ show min ++ "." ++ show rev
 
 export
 closeWindow : IO ()
-closeWindow = ?closeWindow
+closeWindow =
+  foreign FFI_C "glfwDestroyWindow" (IO ())
 
 export
 openWindow : DisplayOptions -> IO Bool
@@ -203,12 +227,13 @@ setWindowPosition w h = ?setWindowPosition
 
 export
 setWindowTitle : String -> IO ()
-setWindowTitle title = ?setWindowTitle
+setWindowTitle title = ?setWindowTitle -- TODO: glfwSetWindowTitle (GLFWwindow *window, const char *title)
 
 export
 setWindowBufferSwapInterval : Int -> IO ()
-setWindowBufferSwapInterval interval = ?setWindowBufferSwapInterval
-
+setWindowBufferSwapInterval interval = 
+  foreign FFI_C "glfwSwapInterval" (Int -> IO ()) interval
+  
 export
 enableMouseCursor : IO ()
 enableMouseCursor = ?enableMouseCursor
@@ -255,11 +280,11 @@ windowIsOpen = ?windowIsOpen
 
 export
 pollEvents : IO ()
-pollEvents = ?pollEvents
+pollEvents = foreign FFI_C "glfwPollEvents" (IO ())
 
 export
 swapBuffers : IO ()
-swapBuffers = ?swapBuffers
+swapBuffers = ?swapBuffers -- TODO: glfwSwapBuffers (GLFWwindow *window)
 
 export
 sleep : Double -> IO ()

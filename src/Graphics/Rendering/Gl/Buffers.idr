@@ -138,7 +138,7 @@ private
 setInt : Ptr -> (idx: Nat) -> Int -> IO ()
 setInt ptr idx i = foreign FFI_C "idr_buffers_set_int" (Ptr -> Int -> Int -> IO ()) ptr (cast idx) i
 
-private
+export
 readInt : Ptr -> (idx: Nat) -> IO Int
 readInt ptr idx = foreign FFI_C "idr_buffers_read_int" (Ptr -> Int -> IO Int) ptr (cast idx)
 
