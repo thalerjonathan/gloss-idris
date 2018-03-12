@@ -54,5 +54,8 @@ This textfile reflects thoughts of porting gloss from Haskell to Idris
 	-> retained the original comments
 	-> if arguments to functions were documented i did that as well in idris, naming the arguments in the type and refering to the name in the documentation with @
 
+- compiling errors sometimes completely misleading
+	-> compiler seems to get confused when there are types from haskell it doesnt like e.g. using [x] instead of List x
+
 - performance
 	-> ?
