@@ -53,7 +53,7 @@ data WindowValue
   | NumFsaaSamples
 
 public export
-data Key
+data GLFWKey
   = CharKey Char
   | KeyUnknown
   | KeySpace
@@ -121,7 +121,8 @@ data Key
   | KeyPadEqual
   | KeyPadEnter
 
-data MouseButton
+public export
+data GLFWMouseButton
   = MouseButton0 | MouseButton1 | MouseButton2 | MouseButton3
   | MouseButton4 | MouseButton5 | MouseButton6 | MouseButton7
 
@@ -166,11 +167,11 @@ CharCallback = Char -> Bool -> IO ()
 
 public export
 KeyCallback : Type
-KeyCallback = Key -> Bool -> IO ()
+KeyCallback = GLFWKey -> Bool -> IO ()
 
 public export
 MouseButtonCallback : Type
-MouseButtonCallback = MouseButton -> Bool -> IO ()
+MouseButtonCallback = GLFWMouseButton -> Bool -> IO ()
 
 public export
 MousePositionCallback : Type

@@ -1,2 +1,3 @@
-- provide GLFW bindings
+- provide low leve GLFW bindings
 - move Rendering.Gl to Rendering.OpenGL
+- completely rework the whole Backend interface thing, replace by ST and EFfects

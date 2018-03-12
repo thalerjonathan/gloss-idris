@@ -9,25 +9,6 @@ import Graphics.Gloss.Internals.Interface.Backend.Types
 import Graphics.Rendering.Gl.Gl41 as GL
 import Graphics.UI.GLFW.GLFW      as GLFW
 
-{-
-import qualified Control.Exception         as X
--}
-
-{- NOTE: gloss-idris gets rid of GLUT  
-||| [Note: FreeGlut]
-||| ~~~~~~~~~~~~~~~~
-||| We use GLUT for font rendering.
-|||   On freeglut-based installations (usually linux) we need to explicitly
-|||   initialize GLUT before we can use any of it's functions.
-|||
-|||  We also need to deinitialize (exit) GLUT when we close the GLFW
-|||   window, otherwise opening a gloss window again from GHCi will crash. 
-|||   For the OS X and Windows version of GLUT there are no such restrictions.
-|||
-|||   We assume also assume that only linux installations use freeglut.
-|||
--}
-
 ||| State of the GLFW backend library.
 public export
 record GLFWState where
@@ -131,6 +112,7 @@ dumpStateGLFW _ = do
 
   fsaaSamples <- GLFW.getWindowValue NumFsaaSamples
 
+{- TODO: seems to let idris compiler hang
   putStr  $ "* dumpGlfwState\n"
           ++ " windowWidth  = " ++ show ww          ++ "\n"
           ++ " windowHeight = " ++ show wh          ++ "\n"
@@ -141,8 +123,10 @@ dumpStateGLFW _ = do
           ++ " aux Buffers  = " ++ show auxBuffers  ++ "\n"
           ++ " FSAA Samples = " ++ show fsaaSamples ++ "\n"
           ++ "\n"
+-}
+  putStr  $ "* dumpGlfwState\n"
 
-
+{-
 -- Display Callback -----------------------------------------------------------
 ||| Callback for when GLFW needs us to redraw the contents of the window.
 installDisplayCallbackGLFW : IORef GLFWState 
@@ -387,34 +371,31 @@ runMainLoopGLFW stateRef = go -- = X.catch go exit
           GLFW.sleep 0.001
           runMainLoopGLFW stateRef
 
-{-
-    exit : X.SomeException -> IO ()
-    exit e = print e >> exitGLFW stateRef
--}
 
 -- Redisplay ------------------------------------------------------------------
 postRedisplayGLFW : IORef GLFWState -> IO ()
 postRedisplayGLFW stateRef
   = modifyIORef stateRef $ \s => record { dirtyScreen = True } s
+-}
 
 public export
 Backend GLFWState where
-  initBackendState           = glfwStateInit
-  initializeBackend          = initializeGLFW
-  exitBackend                = exitGLFW
-  openWindow                 = openWindowGLFW
-  dumpBackendState           = dumpStateGLFW
-  installDisplayCallback     = installDisplayCallbackGLFW
-  installWindowCloseCallback = installWindowCloseCallbackGLFW
-  installReshapeCallback     = installReshapeCallbackGLFW
-  installKeyMouseCallback    = installKeyMouseCallbackGLFW
-  installMotionCallback      = installMotionCallbackGLFW
-  installIdleCallback        = installIdleCallbackGLFW
-  runMainLoop                = runMainLoopGLFW
-  postRedisplay              = postRedisplayGLFW
-  getWindowDimensions        = (\_ => GLFW.getWindowDimensions) -- TODO: why not use const?
-  elapsedTime                = (\_ => GLFW.getTime)             -- TODO: why not use const?
-  sleep                      = (\_ sec => GLFW.sleep sec)
+  initBackendState           = ?glfwStateInit
+  initializeBackend          = ?initializeGLFW
+  exitBackend                = ?exitGLFW
+  openWindow                 = ?openWindowGLFW
+  dumpBackendState           = ?dumpStateGLFW
+  installDisplayCallback     = ?installDisplayCallbackGLFW
+  installWindowCloseCallback = ?installWindowCloseCallbackGLFW
+  installReshapeCallback     = ?installReshapeCallbackGLFW
+  installKeyMouseCallback    = ?installKeyMouseCallbackGLFW
+  installMotionCallback      = ?installMotionCallbackGLFW
+  installIdleCallback        = ?installIdleCallbackGLFW
+  runMainLoop                = ?runMainLoopGLFW
+  postRedisplay              = ?postRedisplayGLFW
+  getWindowDimensions        = ?getWindowDimensions -- (\_ => GLFW.getWindowDimensions) -- TODO: why not use const?
+  elapsedTime                = ?elapsedTime -- (\_ => GLFW.getTime)             -- TODO: why not use const?
+  sleep                      = ?sleep -- (\_ sec => GLFW.sleep sec)
 
 -- Key Code Conversion --------------------------------------------------------
 ||| Convert char keys to special keys to work around a bug in 
@@ -422,7 +403,7 @@ Backend GLFWState where
 |||   so we convert them back here.
 |||   GLFW 2.7 is current as of Nov 2011, and is shipped with the Hackage
 |||   binding GLFW-b 0.2.*
-charToSpecial : Char => Key
+charToSpecial : Char -> Key
 charToSpecial c = case (cast {to=Int} c) of
   32    => SpecialKey KeySpace
   63232 => SpecialKey KeyUp
@@ -447,12 +428,12 @@ charToSpecial c = case (cast {to=Int} c) of
   63275 => SpecialKey KeyEnd
   63276 => SpecialKey KeyPageUp
   63277 => SpecialKey KeyPageDown
-  _     => Char c
+  _     => CharKey c
 
 interface GLFWKey a where
   fromGLFW : a -> Key
 
-GLFWKey GLFW.Key where
+GLFWKey GLFW.GLFWKey where
   fromGLFW key = case key of
     GLFW.CharKey c      => charToSpecial (toLower c)
     GLFW.KeySpace       => SpecialKey KeySpace
@@ -514,7 +495,7 @@ GLFWKey GLFW.Key where
     GLFW.KeyPadEnter    => SpecialKey KeyPadEnter
     _                   => SpecialKey KeyUnknown
 
-GLFWKey GLFW.MouseButton where
+GLFWKey GLFW.GLFWMouseButton where
   fromGLFW mouse = case mouse of
     GLFW.MouseButton0 => MouseButton LeftButton
     GLFW.MouseButton1 => MouseButton RightButton
