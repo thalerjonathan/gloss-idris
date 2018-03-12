@@ -53,9 +53,10 @@ displayIO : (displayMode : Display)
           -> (eatController : (Controller -> IO ()))
           -> IO ()
 displayIO displayMode backColor makePicture eatController
-  = displayWithBackend
+  = pure () {- displayWithBackend
       defaultBackendState
       displayMode
       backColor
       makePicture
       eatController
+      -}

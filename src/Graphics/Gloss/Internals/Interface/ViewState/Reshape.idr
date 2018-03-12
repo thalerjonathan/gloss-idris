@@ -1,15 +1,11 @@
 module Graphics.Gloss.Internals.Interface.ViewState.Reshape
 
 import Data.IORef
-
-import Graphics.Gloss.Internals.Interface.Backend
-import Graphics.Gloss.Internals.Interface.Backend.GLFW
-import Graphics.Gloss.Internals.Interface.Backend.Types
-
 import Graphics.Rendering.Gl.Gl41
 
+import Graphics.Gloss.Internals.Interface.Backend
+
 export
--- TODO: do we really parameterise Backend with GLFWState? in haskell implementation it is left with type parameter a, and in IORef the same
 viewState_reshape : Backend GLFWState => IORef GLFWState -> (Int,Int) -> IO () -- ReshapeCallback
 viewState_reshape stateRef (width, height) = do
   -- Setup the viewport

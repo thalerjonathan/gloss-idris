@@ -4,10 +4,8 @@ import Data.IORef
 
 import Graphics.Gloss.Data.ViewState
 import Graphics.Gloss.Internals.Interface.Backend
-import Graphics.Gloss.Internals.Interface.Backend.GLFW
 import Graphics.Gloss.Internals.Interface.Event
 
--- TODO: do we really parameterise Backend with GLFWState? in haskell implementation it is left with type parameter a, and in IORef the same
 viewState_keyMouse : Backend GLFWState => IORef ViewState -> IORef GLFWState -> Key -> KeyState -> Modifiers -> (Int,Int) -> IO () -- KeyboardMouseCallback
 viewState_keyMouse viewStateRef stateRef key keyState keyMods pos = do
   viewState <- readIORef viewStateRef

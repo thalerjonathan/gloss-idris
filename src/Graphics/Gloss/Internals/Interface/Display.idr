@@ -9,8 +9,6 @@ import Graphics.Gloss.Data.Picture
 import Graphics.Gloss.Data.ViewPort
 import Graphics.Gloss.Data.ViewState
 import Graphics.Gloss.Internals.Interface.Backend
-import Graphics.Gloss.Internals.Interface.Backend.GLFW
-import Graphics.Gloss.Internals.Interface.Backend.Types
 import Graphics.Gloss.Internals.Interface.Common.Exit
 import Graphics.Gloss.Internals.Interface.ViewState.KeyMouse
 import Graphics.Gloss.Internals.Interface.ViewState.Motion
@@ -46,7 +44,6 @@ renderFun viewSR renderSR background makePicture backendRef = do
 ||| @ makePicture   Make the picture to draw.
 ||| @ eatController Eat the controller
 export
--- TODO: do we really parameterise Backend with GLFWState? in haskell implementation it is left with type parameter a, and in IORef the same
 displayWithBackend  : Backend GLFWState 
                    => (backend : GLFWState)
                    -> (displayMode : Display)
@@ -54,7 +51,7 @@ displayWithBackend  : Backend GLFWState
                    -> (makePicture : IO Picture)
                    -> (eatController : (Controller -> IO ()))
                    -> IO ()
-displayWithBackend backend displayMode background makePicture eatController = do
+displayWithBackend backend displayMode background makePicture eatController = pure () {- do
   viewSR   <- newIORef viewStateInit
   renderS  <- initState
   renderSR <- newIORef renderS
@@ -82,3 +79,4 @@ displayWithBackend backend displayMode background makePicture eatController = do
                   let viewState' = record { viewStateViewPort = port' } viewState
                   writeIORef viewSR viewState'
                   postRedisplay backendRef)
+                  -}

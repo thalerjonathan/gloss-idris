@@ -9,25 +9,17 @@ import Graphics.Gloss.Internals.Rendering.GLUtils
 import Graphics.Gloss.Data.Color
 import Graphics.Gloss.Internals.Data.Color
 import Graphics.Gloss.Internals.Interface.Backend
-import Graphics.Gloss.Internals.Interface.Backend.Types
 import Graphics.Gloss.Internals.Interface.Debug
-
-{-
-import Graphics.Rendering.OpenGL                        (($=))
-import qualified Graphics.Rendering.OpenGL.GL           as GL
-import Data.IORef (IORef, newIORef)
-import Control.Monad
--}
 
 ||| Open a window and use the supplied callbacks to handle window events.
 export
 createWindow
-        : Backend a
-        => a
+        : Backend GLFWState
+        => GLFWState
         -> Display
         -> Color                -- ^ Color to use when clearing.
         -> List Callback           -- ^ Callbacks to use.
-        -> (IORef a -> IO ())   -- ^ Give the backend back to the caller before entering the main loop.
+        -> (IORef GLFWState -> IO ())   -- ^ Give the backend back to the caller before entering the main loop.
         -> IO ()
 createWindow
         backend
