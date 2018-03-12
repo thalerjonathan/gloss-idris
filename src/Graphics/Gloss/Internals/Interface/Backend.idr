@@ -469,22 +469,25 @@ GLFWKey GLFW.GLFWMouseButton where
 mutual
   public export
   Backend GLFWState where
-    initBackendState           = ?glfwStateInit
-    initializeBackend          = ?initializeGLFW
-    exitBackend                = ?exitGLFW
-    openWindow                 = ?openWindowGLFW
-    dumpBackendState           = ?dumpStateGLFW
-    installDisplayCallback     = ?installDisplayCallbackGLFW
-    installWindowCloseCallback = ?installWindowCloseCallbackGLFW
-    installReshapeCallback     = ?installReshapeCallbackGLFW
-    installKeyMouseCallback    = ?installKeyMouseCallbackGLFW
-    installMotionCallback      = ?installMotionCallbackGLFW
-    installIdleCallback        = ?installIdleCallbackGLFW
-    runMainLoop                = ?runMainLoopGLFW
-    postRedisplay              = ?postRedisplayGLFW
-    getWindowDimensions        = ?getWindowDimensions -- (\_ => GLFW.getWindowDimensions) -- TODO: why not use const?
-    elapsedTime                = ?elapsedTime -- (\_ => GLFW.getTime)             -- TODO: why not use const?
-    sleep                      = ?sleep -- (\_ sec => GLFW.sleep sec)
+    initBackendState           = glfwStateInit
+    initializeBackend          = initializeGLFW
+    exitBackend                = exitGLFW
+    openWindow                 = openWindowGLFW
+    dumpBackendState           = dumpStateGLFW
+    installDisplayCallback     = installDisplayCallbackGLFW
+    installWindowCloseCallback = installWindowCloseCallbackGLFW
+    installReshapeCallback     = installReshapeCallbackGLFW
+    installKeyMouseCallback    = installKeyMouseCallbackGLFW
+    installMotionCallback      = installMotionCallbackGLFW
+    installIdleCallback        = installIdleCallbackGLFW
+    runMainLoop                = runMainLoopGLFW
+    postRedisplay              = postRedisplayGLFW
+    getWindowDimensions        = (const GLFW.getWindowDimensions)
+    elapsedTime                = (const GLFW.getTime)
+    sleep                      = sleepFunc
+
+  sleepFunc : IORef a -> Double -> IO ()
+  sleepFunc _ sec = GLFW.sleep sec
 
   ||| Initial GLFW state.
   glfwStateInit : GLFWState

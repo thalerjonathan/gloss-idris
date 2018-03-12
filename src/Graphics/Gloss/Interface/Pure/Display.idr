@@ -18,10 +18,9 @@ display  : (dis : Display)
         -> (picture : Picture)
         -> IO ()
 display dis backColor picture
-  = pure () {- displayWithBackend
+  = displayWithBackend
       defaultBackendState
       dis
       backColor
       (pure picture)
       (const (pure ()))
-      -}
