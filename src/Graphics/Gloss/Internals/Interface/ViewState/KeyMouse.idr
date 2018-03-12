@@ -16,11 +16,9 @@ viewState_keyMouse viewStateRef stateRef key keyState keyMods pos = do
         viewStateRef `writeIORef` viewState'
         postRedisplay stateRef
 
--- | Callback to handle keyboard and mouse button events
---      for controlling the 'ViewState'.
+||| Callback to handle keyboard and mouse button events
+|||      for controlling the 'ViewState'.
 export
-callback_viewState_keyMouse 
-        : IORef ViewState
-        -> Callback
+callback_viewState_keyMouse : IORef ViewState -> Callback
 callback_viewState_keyMouse viewStateRef
   = KeyMouse (viewState_keyMouse viewStateRef)

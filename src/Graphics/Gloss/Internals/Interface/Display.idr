@@ -51,7 +51,7 @@ displayWithBackend  : Backend GLFWState
                    -> (makePicture : IO Picture)
                    -> (eatController : (Controller -> IO ()))
                    -> IO ()
-displayWithBackend backend displayMode background makePicture eatController = pure () {- do
+displayWithBackend backend displayMode background makePicture eatController = do
   viewSR   <- newIORef viewStateInit
   renderS  <- initState
   renderSR <- newIORef renderS
@@ -59,12 +59,12 @@ displayWithBackend backend displayMode background makePicture eatController = pu
   let callbacks = [
       Display (renderFun viewSR renderSR background makePicture)
     -- Escape exits the program
-    , callback_exit () 
+    , callback_exit backend
     -- Viewport control with mouse
     , callback_viewState_keyMouse viewSR
     , callback_viewState_motion   viewSR
     , callback_viewState_reshape ]
-  
+
   -- When we create the window we can pass a function to get a
   -- reference to the backend state. Using this we make a controller
   -- so the client can control the window asynchronously.
@@ -79,4 +79,3 @@ displayWithBackend backend displayMode background makePicture eatController = pu
                   let viewState' = record { viewStateViewPort = port' } viewState
                   writeIORef viewSR viewState'
                   postRedisplay backendRef)
-                  -}
