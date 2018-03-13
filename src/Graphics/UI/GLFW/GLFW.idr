@@ -6,10 +6,14 @@ import public Graphics.UI.GLFW.GlfwConfig
 
 %include C "GLFW/glfw3.h"
 
+export
+Window : Type
+Window = Ptr
+
 public export
 data DisplayMode
-  = Window
-  | Fullscreen
+  = WindowMode
+  | FullscreenMode
 
 public export
 data OpenGLProfile
@@ -144,7 +148,7 @@ defaultDisplayOptions =
     0               -- displayOptions_numAlphaBits            = 0
     0               -- displayOptions_numDepthBits            = 0
     0               -- displayOptions_numStencilBits          = 0
-    Window          -- displayOptions_displayMode             = Window
+    WindowMode      -- displayOptions_displayMode             = Window
     Nothing         -- displayOptions_refreshRate             = Nothing
     Nothing         -- displayOptions_accumNumRedBits         = Nothing
     Nothing         -- displayOptions_accumNumGreenBits       = Nothing
@@ -214,33 +218,83 @@ getGlfwVersion = do
 
 export
 closeWindow : IO ()
-closeWindow =
-  foreign FFI_C "glfwDestroyWindow" (IO ())
+closeWindow
+  = foreign FFI_C "glfwDestroyWindow" (IO ())
 
 export
-openWindow : DisplayOptions -> IO Bool
-openWindow disp = ?openWindow
+openWindow : DisplayOptions -> String -> IO Window
+openWindow disp title = do
+{-
+  displayOptions_width                   : Int
+  displayOptions_height                  : Int
+  displayOptions_numRedBits              : Int
+  displayOptions_numGreenBits            : Int
+  displayOptions_numBlueBits             : Int
+  displayOptions_numAlphaBits            : Int
+  displayOptions_numDepthBits            : Int
+  displayOptions_numStencilBits          : Int
+  displayOptions_displayMode             : DisplayMode
+  displayOptions_refreshRate             : Maybe Int
+  displayOptions_accumNumRedBits         : Maybe Int
+  displayOptions_accumNumGreenBits       : Maybe Int
+  displayOptions_accumNumBlueBits        : Maybe Int
+  displayOptions_accumNumAlphaBits       : Maybe Int
+  displayOptions_numAuxiliaryBuffers     : Maybe Int
+  displayOptions_numFsaaSamples          : Maybe Int
+  displayOptions_windowIsResizable       : Bool
+  displayOptions_stereoRendering         : Bool
+  displayOptions_openGLVersion           : (Int, Int)
+  displayOptions_openGLForwardCompatible : Bool
+  displayOptions_openGLDebugContext      : Bool
+  displayOptions_openGLProfile           : OpenGLProfile
+-}
+
+  let width  = displayOptions_width disp
+  let height = displayOptions_height disp
+
+  let monitor = 
+    case displayOptions_displayMode disp of
+      WindowMode     => null
+      FullscreenMode => null -- TODO: set to valid monitor config
+
+  win <- foreign FFI_C "glfwCreateWindow" (Int -> Int -> String -> Ptr -> Ptr) width height title monitor null
+
+  pure win
 
 export
-setWindowPosition : Int -> Int -> IO ()
-setWindowPosition w h = ?setWindowPosition
+setWindowPosition : Window -> Int -> Int -> IO ()
+setWindowPosition win x y
+  = foreign FFI_C "glfwSetWindowPos" (Ptr -> Int -> Int -> IO ()) win w h
 
 export
-setWindowTitle : String -> IO ()
-setWindowTitle title = ?setWindowTitle -- TODO: glfwSetWindowTitle (GLFWwindow *window, const char *title)
+setWindowTitle : Window -> String -> IO ()
+setWindowTitle win title
+  = foreign FFI_C "glfwSetWindowTitle" (Ptr -> String -> IO ()) win title
 
 export
 setWindowBufferSwapInterval : Int -> IO ()
-setWindowBufferSwapInterval interval = 
-  foreign FFI_C "glfwSwapInterval" (Int -> IO ()) interval
+setWindowBufferSwapInterval interval
+  = foreign FFI_C "glfwSwapInterval" (Int -> IO ()) interval
   
 export
 enableMouseCursor : IO ()
 enableMouseCursor = ?enableMouseCursor
 
 export
-getWindowDimensions : IO (Int, Int)
-getWindowDimensions = ?getWindowDimensions
+getWindowDimensions : Window -> IO (Int, Int)
+getWindowDimensions win = do
+  widthPtr <- intBuffer 1
+  heightPtr <- intBuffer 1
+
+  foreign FFI_C "glfwGetWindowSize" (Ptr -> Ptr -> Ptr IO ()) win widthPtr heightPtr
+
+  width <- readInt widthPtr 0 
+  height <- readInt heightPtr 0 
+
+  free widthPtr
+  free heightPtr
+  
+  pure (width, height)
 
 export
 getWindowValue : WindowValue -> IO Int
@@ -283,8 +337,9 @@ pollEvents : IO ()
 pollEvents = foreign FFI_C "glfwPollEvents" (IO ())
 
 export
-swapBuffers : IO ()
-swapBuffers = ?swapBuffers -- TODO: glfwSwapBuffers (GLFWwindow *window)
+swapBuffers : Window -> IO ()
+swapBuffers win
+  = foreign FFI_C "glfwSwapBuffers" (Ptr -> IO ()) win
 
 export
 sleep : Double -> IO ()
