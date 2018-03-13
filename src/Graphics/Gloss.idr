@@ -1,5 +1,5 @@
 ||| Gloss hides the pain of drawing simple vector graphics behind a nice data type and
-module Graphics.Gloss 
+module Graphics.Gloss
 {-
 ||| Gloss hides the pain of drawing simple vector graphics behind a nice data type and
 |||      a few display functions. 

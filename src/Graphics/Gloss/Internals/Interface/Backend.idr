@@ -458,14 +458,14 @@ GLFWKey GLFW.GLFWKey where
 
 GLFWKey GLFW.GLFWMouseButton where
   fromGLFW mouse = case mouse of
-    GLFW.MouseButton0 => MouseButton LeftButton
-    GLFW.MouseButton1 => MouseButton RightButton
-    GLFW.MouseButton2 => MouseButton MiddleButton
-    GLFW.MouseButton3 => MouseButton $ AdditionalButton 3
+    GLFW.MouseButton1 => MouseButton LeftButton
+    GLFW.MouseButton2 => MouseButton RightButton
+    GLFW.MouseButton3 => MouseButton MiddleButton
     GLFW.MouseButton4 => MouseButton $ AdditionalButton 4
     GLFW.MouseButton5 => MouseButton $ AdditionalButton 5
     GLFW.MouseButton6 => MouseButton $ AdditionalButton 6
     GLFW.MouseButton7 => MouseButton $ AdditionalButton 7
+    GLFW.MouseButton8 => MouseButton $ AdditionalButton 8
 
 
 mutual
@@ -525,7 +525,9 @@ mutual
   -- Exit -----------------------------------------------------------------------
   ||| Tell the GLFW backend to close the window and exit.
   exitGLFW : IORef GLFWState -> IO ()
-  exitGLFW _ = GLFW.closeWindow
+  exitGLFW stateRef = do
+    s <- readIORef stateRef
+    GLFW.destroyWindow (winHdl s)
 
   -- Open Window ----------------------------------------------------------------
   ||| Open a new window.
@@ -538,7 +540,7 @@ mutual
       , displayOptions_height       = sizeY
       , displayOptions_displayMode  = GLFW.WindowMode } GLFW.defaultDisplayOptions
 
-    win <- GLFW.openWindow title disp
+    win <- GLFW.createWindow title disp
     uncurry (GLFW.setWindowPosition win) pos
     
     -- Try to enable sync-to-vertical-refresh by setting the number 
@@ -552,12 +554,12 @@ mutual
       --, displayOptions_height       = sizeY
       displayOptions_displayMode  = GLFW.FullscreenMode } GLFW.defaultDisplayOptions
 
-    win <- GLFW.openWindow "" disp
+    win <- GLFW.createWindow "" disp
 
     -- Try to enable sync-to-vertical-refresh by setting the number 
     -- of buffer swaps per vertical refresh to 1.
     GLFW.setSwapInterval 1
-    GLFW.enableMouseCursor
+    GLFW.showMouseCursor win True
 
   -- Dump State -----------------------------------------------------------------
   ||| Print out the internal GLFW state.
@@ -639,32 +641,48 @@ mutual
   ||| Callback for when the user closes the window.
   --   We can do some cleanup here.
   installWindowCloseCallbackGLFW  : IORef GLFWState -> IO ()
-  installWindowCloseCallbackGLFW _ = GLFW.setWindowCloseCallback (pure True)
+  installWindowCloseCallbackGLFW stateRef = do
+      s <- readIORef stateRef
+      GLFW.setWindowCloseCallback (winHdl s) !windowCloseCallbackPtr
+    where
+      -- IO callbacks not (yet) suppored by Idris, need to use unsafePerformIO
+      windowCloseCallback : WindowCloseCallback
+      windowCloseCallback _ = ()
+    
+      -- unfortunately we need to pass the callback as a pointer...
+      windowCloseCallbackPtr : IO Ptr
+      windowCloseCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr WindowCloseCallback -> IO Ptr) (MkCFnPtr windowCloseCallback)
 
   -- Reshape --------------------------------------------------------------------
-  callbackReshape : Backend GLFWState
-                  => IORef GLFWState
-                  -> List Callback
-                  -> Int 
-                  -> Int
-                  -> IO ()
-  -- callbackReshape glfwState callbacks sizeX sizeY = 
-  callbackReshape _ [] _ _ = pure ()
-  callbackReshape glfwState (Reshape f :: cs) sizeX sizeY  = f glfwState (sizeX, sizeY)
-  callbackReshape _ _ _ _ = pure ()
-  {-
-    = sequence_
-    $ map (\f => f (sizeX, sizeY))
-      [f glfwState | Reshape f <- callbacks] -- TODO: this looks like its not gonna work in idris
-    -}
-
   ||| Callback for when the user reshapes the window.
   installReshapeCallbackGLFW :  Backend GLFWState 
-                            => IORef GLFWState 
-                            -> List Callback 
-                            -> IO ()
-  installReshapeCallbackGLFW stateRef callbacks
-    = GLFW.setWindowSizeCallback (callbackReshape stateRef callbacks)
+                             => IORef GLFWState 
+                             -> List Callback 
+                             -> IO ()
+  installReshapeCallbackGLFW stateRef callbacks = do
+      s <- readIORef stateRef
+      GLFW.setWindowSizeCallback (winHdl s) !windowSizeCallbackPtr -- (callbackReshape stateRef callbacks)
+    where
+      callbackReshape :  List Callback
+                      -> Int 
+                      -> Int
+                      -> IO ()
+      callbackReshape [] _ _ = pure ()
+      callbackReshape (Reshape f :: cs) sizeX sizeY  = f stateRef (sizeX, sizeY)
+      callbackReshape _ _ _ = pure ()
+      {-
+        = sequence_
+        $ map (\f => f (sizeX, sizeY))
+          [f glfwState | Reshape f <- callbacks] -- TODO: this looks like its not gonna work in idris
+        -}
+
+      windowSizeCallback : WindowSizeCallback
+      windowSizeCallback win' w h = unsafePerformIO $ do 
+        callbackReshape callbacks w h
+
+      windowSizeCallbackPtr : IO Ptr
+      windowSizeCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr WindowSizeCallback -> IO Ptr) (MkCFnPtr windowSizeCallback)
+
 
   -- KeyMouse -----------------------------------------------------------------------
   setModifiers :  IORef GLFWState
@@ -701,104 +719,6 @@ mutual
     runKeyMouseClbk stateRef key keystate mods pos cs
   runKeyMouseClbk _ _ _ _ _ _ = pure ()
 
-  -- GLFW calls this on a non-character keyboard action.
-  callbackKeyboard :  IORef GLFWState 
-                  -> List Callback
-                  -> GLFW.GLFWKey 
-                  -> Bool
-                  -> IO ()
-  callbackKeyboard stateRef callbacks key keystate = do
-      (modsSet, MkGLFWState mods pos _ _ _ _ _) <- setModifiers stateRef key keystate     
-      let key'      = fromGLFW key
-      let keystate' = if keystate then Down else Up
-
-      -- Call the Gloss KeyMouse actions with the new state.
-      -- original code uses unless, idris doesn't have unless but it is just the reverse of when
-      -- => when not
-      when (not (modsSet || isCharKey key' && keystate))
-        (runKeyMouseClbk stateRef key' keystate' mods pos callbacks)
-
-        --$ sequence_ 
-        --$ map  (\f => f key' keystate' mods pos)
-        --      [f stateRef | KeyMouse f <- callbacks] -- TODO: this looks like its not gonna work in idris
-              
-    where
-      isCharKey : Key -> Bool
-      isCharKey (CharKey _) = True
-      isCharKey _           = False
-
-  -- GLFW calls this on a when the user presses or releases a character key.
-  callbackChar :  IORef GLFWState 
-              -> List Callback
-              -> Char 
-              -> Bool 
-              -> IO ()
-  callbackChar stateRef callbacks char keystate = do
-      (MkGLFWState mods pos _ _ _ _ _) <- readIORef stateRef
-      let key'      = charToSpecial char
-      -- Only key presses of characters are passed to this callback,
-      -- character key releases are caught by the 'keyCallback'. This is an
-      -- intentional feature of GLFW. What this means that a key press of
-      -- the '>' char  (on a US Intl keyboard) is captured by this callback,
-      -- but a release is captured as a '.' with the shift-modifier in the
-      -- keyCallback.
-      let keystate' = if keystate then Down else Up
-
-      -- Call all the Gloss KeyMouse actions with the new state.
-      {-
-      sequence_ 
-        $ map  (\f => f key' keystate' mods pos) 
-              [f stateRef | KeyMouse f <- callbacks] -- TODO: this looks like its not gonna work in idris
-              -}
-      runKeyMouseClbk stateRef key' keystate' mods pos callbacks
-
-  -- GLFW calls on this when the user clicks or releases a mouse button.
-  callbackMouseButton :  IORef GLFWState 
-                      -> List Callback
-                      -> GLFW.GLFWMouseButton
-                      -> Bool
-                      -> IO ()
-  callbackMouseButton stateRef callbacks key keystate = do
-    (MkGLFWState mods pos _ _ _ _ _) <- readIORef stateRef
-    let key'      = fromGLFW key
-    let keystate' = if keystate then Down else Up
-
-    -- Call all the Gloss KeyMouse actions with the new state.
-    runKeyMouseClbk stateRef key' keystate' mods pos callbacks
-    {-
-    sequence_ 
-      $ map  (\f => f key' keystate' mods pos)
-            [f stateRef | KeyMouse f <- callbacks] -- TODO: this looks like its not gonna work in idris
-            -}
-
-  setMouseWheel :  IORef GLFWState
-                -> Int
-                -> IO (Key, KeyState)
-  setMouseWheel stateRef w = do
-    glfwState <- readIORef stateRef
-    writeIORef stateRef $ record { mouseWheelPos = w } glfwState
-    case compare w (mouseWheelPos glfwState) of
-          LT => pure (MouseButton WheelDown , Down)
-          GT => pure (MouseButton WheelUp   , Down)
-          EQ => pure (SpecialKey  KeyUnknown, Up  )
-
-  -- GLFW calls on this when the user moves the mouse wheel.
-  callbackMouseWheel :  IORef GLFWState 
-                    -> List Callback
-                    -> Int
-                    -> IO ()
-  callbackMouseWheel stateRef callbacks w = do
-    (key, keystate)  <- setMouseWheel stateRef w
-    (MkGLFWState mods pos _ _ _ _ _) <- readIORef stateRef
-
-    -- Call all the Gloss KeyMouse actions with the new state.
-    runKeyMouseClbk stateRef key keystate mods pos callbacks
-    {-
-    sequence_ 
-      $ map  (\f => f key keystate mods pos)
-            [f stateRef | KeyMouse f <- callbacks]
-            -}
-
   ||| Callbacks for when the user presses a key or moves / clicks the mouse.
   |||   This is a bit verbose because we have to do impedence matching between
   |||   GLFW's event system, and the one use by Gloss which was originally
@@ -810,53 +730,199 @@ mutual
                               -> List Callback 
                               -> IO ()
   installKeyMouseCallbackGLFW stateRef callbacks = do
-    GLFW.setKeyCallback         $ (callbackKeyboard    stateRef callbacks)
-    GLFW.setCharCallback        $ (callbackChar        stateRef callbacks)
-    GLFW.setMouseButtonCallback $ (callbackMouseButton stateRef callbacks)
-    GLFW.setMouseWheelCallback  $ (callbackMouseWheel  stateRef callbacks)
+      s <- readIORef stateRef
+      GLFW.setKeyCallback         (winHdl s) !keyCallbackPtr
+      GLFW.setCharCallback        (winHdl s) !charCallbackPtr
+      GLFW.setMouseButtonCallback (winHdl s) !mouseButtonCallbackPtr
+      GLFW.setMouseWheelCallback  (winHdl s) !mouseWheelCallbackPtr
+    where
+      -- GLFW calls this on a non-character keyboard action.
+      callbackKeyboard : GLFW.GLFWKey 
+                      -> Bool
+                      -> IO ()
+      callbackKeyboard key keystate = do
+          (modsSet, MkGLFWState mods pos _ _ _ _ _) <- setModifiers stateRef key keystate     
+          let key'      = fromGLFW key
+          let keystate' = if keystate then Down else Up
+
+          -- Call the Gloss KeyMouse actions with the new state.
+          -- original code uses unless, idris doesn't have unless but it is just the reverse of when
+          -- => when not
+          when (not (modsSet || isCharKey key' && keystate))
+            (runKeyMouseClbk stateRef key' keystate' mods pos callbacks)
+
+            --$ sequence_ 
+            --$ map  (\f => f key' keystate' mods pos)
+            --      [f stateRef | KeyMouse f <- callbacks] -- TODO: this looks like its not gonna work in idris
+                  
+        where
+          isCharKey : Key -> Bool
+          isCharKey (CharKey _) = True
+          isCharKey _           = False
+
+      -- GLFW calls this on a when the user presses or releases a character key.
+      callbackChar : Char 
+                  -> Bool 
+                  -> IO ()
+      callbackChar char keystate = do
+          (MkGLFWState mods pos _ _ _ _ _) <- readIORef stateRef
+          let key'      = charToSpecial char
+          -- Only key presses of characters are passed to this callback,
+          -- character key releases are caught by the 'keyCallback'. This is an
+          -- intentional feature of GLFW. What this means that a key press of
+          -- the '>' char  (on a US Intl keyboard) is captured by this callback,
+          -- but a release is captured as a '.' with the shift-modifier in the
+          -- keyCallback.
+          let keystate' = if keystate then Down else Up
+
+          -- Call all the Gloss KeyMouse actions with the new state.
+          {-
+          sequence_ 
+            $ map  (\f => f key' keystate' mods pos) 
+                  [f stateRef | KeyMouse f <- callbacks] -- TODO: this looks like its not gonna work in idris
+                  -}
+          runKeyMouseClbk stateRef key' keystate' mods pos callbacks
+
+      -- GLFW calls on this when the user clicks or releases a mouse button.
+      callbackMouseButton :  GLFW.GLFWMouseButton
+                          -> Bool
+                          -> IO ()
+      callbackMouseButton key keystate = do
+        (MkGLFWState mods pos _ _ _ _ _) <- readIORef stateRef
+        let key'      = fromGLFW key
+        let keystate' = if keystate then Down else Up
+
+        -- Call all the Gloss KeyMouse actions with the new state.
+        runKeyMouseClbk stateRef key' keystate' mods pos callbacks
+        {-
+        sequence_ 
+          $ map  (\f => f key' keystate' mods pos)
+                [f stateRef | KeyMouse f <- callbacks] -- TODO: this looks like its not gonna work in idris
+                -}
+
+      setMouseWheel :  Int
+                    -> IO (Key, KeyState)
+      setMouseWheel w = do
+        glfwState <- readIORef stateRef
+        writeIORef stateRef $ record { mouseWheelPos = w } glfwState
+        case compare w (mouseWheelPos glfwState) of
+              LT => pure (MouseButton WheelDown , Down)
+              GT => pure (MouseButton WheelUp   , Down)
+              EQ => pure (SpecialKey  KeyUnknown, Up  )
+
+      -- GLFW calls on this when the user moves the mouse wheel.
+      callbackMouseWheel :  Int
+                         -> IO ()
+      callbackMouseWheel w = do
+        (key, keystate)  <- setMouseWheel w
+        (MkGLFWState mods pos _ _ _ _ _) <- readIORef stateRef
+
+        -- Call all the Gloss KeyMouse actions with the new state.
+        runKeyMouseClbk stateRef key keystate mods pos callbacks
+        {-
+        sequence_ 
+          $ map  (\f => f key keystate mods pos)
+                [f stateRef | KeyMouse f <- callbacks]
+                -}
+
+      keyCallback : KeyCallback
+      keyCallback win' key scancode action mods = unsafePerformIO $ do
+          let mglfwKey = GLFW.glfwKeyFromInt key
+          let mglfwAct = GLFW.glfwKeyActionFromInt action
+          keyCallbackAux mglfwKey mglfwAct
+        where
+          keyCallbackAux :  Maybe GLFWKey
+                         -> Maybe GLFWKeyAction
+                         -> IO ()
+          keyCallbackAux (Just glfwKey) (Just Press)   = callbackKeyboard glfwKey True
+          keyCallbackAux (Just glfwKey) (Just Release) = callbackKeyboard glfwKey False
+          keyCallbackAux _ _ = pure () -- ignore invalid key (which won't happen, but need to catch it this way)
+
+      keyCallbackPtr : IO Ptr
+      keyCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr KeyCallback -> IO Ptr) (MkCFnPtr keyCallback)
+
+      charCallback : CharCallback
+      charCallback win' c = unsafePerformIO $ do 
+        callbackChar c True -- TODO: is true correct here?
+        pure ()
+
+      charCallbackPtr : IO Ptr
+      charCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr CharCallback -> IO Ptr) (MkCFnPtr charCallback)
+
+      mouseButtonCallback : MouseButtonCallback
+      mouseButtonCallback win' button action mods = unsafePerformIO $ do 
+          let mglfwMb = GLFW.glfwMouseButtonFromInt button
+          let mglfwAct = GLFW.glfwKeyActionFromInt action
+
+          mouseButtonCallbackAux mglfwMb mglfwAct
+        where
+          mouseButtonCallbackAux :  Maybe GLFWMouseButton
+                                 -> Maybe GLFWKeyAction
+                                 -> IO ()
+          mouseButtonCallbackAux (Just glfwMb) (Just Press)   = callbackMouseButton glfwMb True
+          mouseButtonCallbackAux (Just glfwMb) (Just Release) = callbackMouseButton glfwMb False
+          mouseButtonCallbackAux _ _ = pure () -- ignore invalid key (which won't happen, but need to catch it this way)
+
+
+      mouseButtonCallbackPtr : IO Ptr
+      mouseButtonCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr MouseButtonCallback -> IO Ptr) (MkCFnPtr mouseButtonCallback)
+
+      mouseWheelCallback : MouseWheelCallback
+      mouseWheelCallback win' xoff yoff = unsafePerformIO $ do 
+        callbackMouseWheel (cast yoff)
+        pure ()
+
+      mouseWheelCallbackPtr : IO Ptr
+      mouseWheelCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr MouseButtonCallback -> IO Ptr) (MkCFnPtr mouseButtonCallback)
 
   -- Motion Callback ------------------------------------------------------------
-  setMousePos :  IORef GLFWState
-              -> Int 
-              -> Int
-              -> IO (Int, Int)
-  setMousePos stateRef x y = do
-    let pos = (x,y)
-    modifyIORef stateRef $ \s => record { mousePosition = pos } s
-    pure pos
-
-
-  callbackMotion :  IORef GLFWState 
-                 -> List Callback
-                 -> Int 
-                 -> Int
-                 -> IO ()
-  callbackMotion stateRef callbacks x y = do
-      pos <- setMousePos stateRef x y
-
-      -- Call all the Gloss Motion actions with the new state.
-      runMotionClbks pos callbacks
-      {-
-      sequence_ 
-        $ map  (\f => f pos)
-              [f stateRef | Motion f <- callbacks] -- TODO: this looks like its not gonna work in idris
-              -}
-    where
-      runMotionClbks : (Int, Int) 
-                     -> List Callback
-                     -> IO ()
-      runMotionClbks _ [] = pure ()
-      runMotionClbks pos (Motion f :: cs) = do
-        f stateRef pos
-        runMotionClbks pos cs
-      runMotionClbks _ _ = pure ()
-
   ||| Callback for when the user moves the mouse.
   installMotionCallbackGLFW :  IORef GLFWState 
                             -> List Callback
                             -> IO ()
-  installMotionCallbackGLFW stateRef callbacks
-    = GLFW.setMousePositionCallback $ (callbackMotion stateRef callbacks)
+  installMotionCallbackGLFW stateRef callbacks = do
+      s <- readIORef stateRef
+      GLFW.setMousePositionCallback (winHdl s) !mousePositionCallbackPtr -- (callbackMotion stateRef callbacks)
+    where
+      setMousePos :  Int 
+                  -> Int
+                  -> IO (Int, Int)
+      setMousePos x y = do
+        let pos = (x,y)
+        modifyIORef stateRef $ \s => record { mousePosition = pos } s
+        pure pos
+
+      callbackMotion :  Int 
+                    -> Int
+                    -> IO ()
+      callbackMotion x y = do
+          pos <- setMousePos x y
+
+          -- Call all the Gloss Motion actions with the new state.
+          runMotionClbks pos callbacks
+          {-
+          sequence_ 
+            $ map  (\f => f pos)
+                  [f stateRef | Motion f <- callbacks] -- TODO: this looks like its not gonna work in idris
+                  -}
+        where
+          runMotionClbks : (Int, Int) 
+                        -> List Callback
+                        -> IO ()
+          runMotionClbks _ [] = pure ()
+          runMotionClbks pos (Motion f :: cs) = do
+            f stateRef pos
+            runMotionClbks pos cs
+          runMotionClbks _ _ = pure ()
+
+
+      mousePositionCallback : MousePositionCallback
+      mousePositionCallback win' xpos ypos = unsafePerformIO $ do 
+        callbackMotion (cast xpos) (cast ypos)
+        pure ()
+
+      mousePositionCallbackPtr : IO Ptr
+      mousePositionCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr MousePositionCallback -> IO Ptr) (MkCFnPtr mousePositionCallback)
 
   -- Idle Callback --------------------------------------------------------------
   callbackIdle :  IORef GLFWState 
@@ -884,7 +950,8 @@ mutual
     where
       go : IO ()
       go = do 
-        windowIsOpen <- GLFW.windowIsOpen
+        let win = winHdl !(readIORef stateRef)
+        windowIsOpen <- GLFW.windowIsOpen win
         when windowIsOpen 
           $ do  
             GLFW.pollEvents
@@ -894,7 +961,7 @@ mutual
               $ do  
                 s <- readIORef stateRef
                 display s
-                GLFW.swapBuffers (winHdl s)
+                GLFW.swapBuffers win
 
             modifyIORef stateRef $ \s => record { dirtyScreen = False } s
 

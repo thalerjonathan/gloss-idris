@@ -1,0 +1,3 @@
+package color
+
+pkgs = gloss-idris, glfw-idris-st

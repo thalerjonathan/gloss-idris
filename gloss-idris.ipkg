@@ -1,7 +1,8 @@
 package gloss-idris
 
 sourcedir = src
-modules =   Graphics.Gloss.Rendering
+modules =   Graphics.Gloss
+          , Graphics.Gloss.Rendering
 
           -- DATA
           , Graphics.Gloss.Data.Bitmap
