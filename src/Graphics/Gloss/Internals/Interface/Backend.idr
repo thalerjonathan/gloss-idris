@@ -25,6 +25,8 @@ mutual
     display       : IO ()
     ||| Action perforrmed when idling
     idle          : IO ()
+    ||| The handle to the GLFW window
+    winHdl        : GLFW.Window
 
   -------------------------------------------------------------------------------
   public export
@@ -482,9 +484,14 @@ mutual
     installIdleCallback        = installIdleCallbackGLFW
     runMainLoop                = runMainLoopGLFW
     postRedisplay              = postRedisplayGLFW
-    getWindowDimensions        = (const GLFW.getWindowDimensions)
+    getWindowDimensions        = windowDimensionsFunc
     elapsedTime                = (const GLFW.getTime)
     sleep                      = sleepFunc
+
+  windowDimensionsFunc : IORef GLFWState -> IO (Int, Int)
+  windowDimensionsFunc stateRef = do
+    s <- readIORef stateRef
+    GLFW.getWindowDimensions (winHdl s)
 
   sleepFunc : IORef a -> Double -> IO ()
   sleepFunc _ sec = GLFW.sleep sec
@@ -499,6 +506,7 @@ mutual
         True
         (pure ())
         (pure ())
+        NullWindow
 
   export
   defaultBackendState : GLFWState
@@ -522,42 +530,41 @@ mutual
   -- Open Window ----------------------------------------------------------------
   ||| Open a new window.
   openWindowGLFW :  IORef GLFWState
-                -> Display
-                -> IO ()
+                 -> Display
+                 -> IO ()
   openWindowGLFW _ (InWindow title (sizeX, sizeY) pos) = do
     let disp = record 
       { displayOptions_width        = sizeX
       , displayOptions_height       = sizeY
-      , displayOptions_displayMode  = GLFW.Window } GLFW.defaultDisplayOptions
+      , displayOptions_displayMode  = GLFW.WindowMode } GLFW.defaultDisplayOptions
 
-    _ <- GLFW.openWindow disp
-
-    uncurry GLFW.setWindowPosition pos
-    GLFW.setWindowTitle title
-
+    win <- GLFW.openWindow title disp
+    uncurry (GLFW.setWindowPosition win) pos
+    
     -- Try to enable sync-to-vertical-refresh by setting the number 
     -- of buffer swaps per vertical refresh to 1.
-    GLFW.setWindowBufferSwapInterval 1
+    GLFW.setSwapInterval 1
 
   -- TODO: really no idea where (sizeX, sizeY) comes from at this point, they don't show up in the type
   openWindowGLFW _ (FullScreen) = do --(sizeX, sizeY)) = do
     let disp = record 
       { --displayOptions_width        = sizeX
       --, displayOptions_height       = sizeY
-      displayOptions_displayMode  = GLFW.Fullscreen } GLFW.defaultDisplayOptions
+      displayOptions_displayMode  = GLFW.FullscreenMode } GLFW.defaultDisplayOptions
 
-    _ <- GLFW.openWindow disp
+    win <- GLFW.openWindow "" disp
 
     -- Try to enable sync-to-vertical-refresh by setting the number 
     -- of buffer swaps per vertical refresh to 1.
-    GLFW.setWindowBufferSwapInterval 1
+    GLFW.setSwapInterval 1
     GLFW.enableMouseCursor
 
   -- Dump State -----------------------------------------------------------------
   ||| Print out the internal GLFW state.
-  dumpStateGLFW : IORef a -> IO ()
-  dumpStateGLFW _ = do
-    (ww,wh)     <- GLFW.getWindowDimensions
+  dumpStateGLFW : IORef GLFWState -> IO ()
+  dumpStateGLFW stateRef = do
+    s           <- readIORef stateRef
+    (ww,wh)     <- GLFW.getWindowDimensions (winHdl s)
 
     r           <- GLFW.getWindowValue NumRedBits
     g           <- GLFW.getWindowValue NumGreenBits
@@ -701,7 +708,7 @@ mutual
                   -> Bool
                   -> IO ()
   callbackKeyboard stateRef callbacks key keystate = do
-      (modsSet, MkGLFWState mods pos _ _ _ _) <- setModifiers stateRef key keystate     
+      (modsSet, MkGLFWState mods pos _ _ _ _ _) <- setModifiers stateRef key keystate     
       let key'      = fromGLFW key
       let keystate' = if keystate then Down else Up
 
@@ -727,7 +734,7 @@ mutual
               -> Bool 
               -> IO ()
   callbackChar stateRef callbacks char keystate = do
-      (MkGLFWState mods pos _ _ _ _) <- readIORef stateRef
+      (MkGLFWState mods pos _ _ _ _ _) <- readIORef stateRef
       let key'      = charToSpecial char
       -- Only key presses of characters are passed to this callback,
       -- character key releases are caught by the 'keyCallback'. This is an
@@ -752,7 +759,7 @@ mutual
                       -> Bool
                       -> IO ()
   callbackMouseButton stateRef callbacks key keystate = do
-    (MkGLFWState mods pos _ _ _ _) <- readIORef stateRef
+    (MkGLFWState mods pos _ _ _ _ _) <- readIORef stateRef
     let key'      = fromGLFW key
     let keystate' = if keystate then Down else Up
 
@@ -782,7 +789,7 @@ mutual
                     -> IO ()
   callbackMouseWheel stateRef callbacks w = do
     (key, keystate)  <- setMouseWheel stateRef w
-    (MkGLFWState mods pos _ _ _ _) <- readIORef stateRef
+    (MkGLFWState mods pos _ _ _ _ _) <- readIORef stateRef
 
     -- Call all the Gloss KeyMouse actions with the new state.
     runKeyMouseClbk stateRef key keystate mods pos callbacks
@@ -887,7 +894,7 @@ mutual
               $ do  
                 s <- readIORef stateRef
                 display s
-                GLFW.swapBuffers
+                GLFW.swapBuffers (winHdl s)
 
             modifyIORef stateRef $ \s => record { dirtyScreen = False } s
 
