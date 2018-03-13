@@ -1,14 +1,11 @@
 CC = gcc
-CFLAGS = `idris --include` `pkg-config --cflags glew libpng glfw3`
+CFLAGS = `idris --include` `pkg-config --cflags glew libpng`
 
 gl_idris.o: config gl_idris.c gl_idris.h 
 
 config: .PHONY
 	echo "%flag C \"`pkg-config --cflags glew libpng`\"" > Graphics/Rendering/Gl/Config.idr
 	echo "%flag C \"`pkg-config --libs glew libpng`\"" >> Graphics/Rendering/Gl/Config.idr
-
-	echo "%flag C \"`pkg-config --cflags glfw3`\"" > Graphics/UI/GLFW/GlfwConfig.idr
-	echo "%flag C \"`pkg-config --libs glfw3`\"" >> Graphics/UI/GLFW/GlfwConfig.idr
 clean: .PHONY
 	rm gl_idris.o
 

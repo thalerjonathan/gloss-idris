@@ -51,10 +51,7 @@ modules =   Graphics.Gloss.Rendering
           , Graphics.Gloss.Internals.Interface.ViewState.Reshape
           , Graphics.Gloss.Internals.Interface.Window
 
-          -- GLFW stuff
-          , Graphics.UI.GLFW.GLFW
-
-pkgs = contrib
+pkgs = contrib, glfw-idris-st
 
 makefile = MakefileGl
 
