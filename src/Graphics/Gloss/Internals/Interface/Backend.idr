@@ -518,7 +518,6 @@ mutual
   initializeGLFW _ debug = do
     _           <- GLFW.initialize
     glfwVersion <- GLFW.getGlfwVersion
-    _           <- GLEW.glewInit -- don't forget to initialize glew, otherwise crash when using opengl
 
     when debug
       (putStr  $ "  glfwVersion        = " ++ show glfwVersion   ++ "\n")
@@ -542,7 +541,11 @@ mutual
       , displayOptions_displayMode  = GLFW.WindowMode } GLFW.defaultDisplayOptions
 
     win <- GLFW.createWindow title disp
+    GLFW.makeContextCurrent win
+
     modifyIORef stateRef (\s => record {winHdl = win } s)
+    
+    GLEW.glewInit -- don't forget to initialize glew AFTER window creation because OpenGL context exists only then
 
     uncurry (GLFW.setWindowPosition win) pos
     
@@ -558,7 +561,11 @@ mutual
       displayOptions_displayMode  = GLFW.FullscreenMode } GLFW.defaultDisplayOptions
 
     win <- GLFW.createWindow "" disp
+    GLFW.makeContextCurrent win
+    
     modifyIORef stateRef (\s => record {winHdl = win } s)
+
+    GLEW.glewInit -- don't forget to initialize glew AFTER window creation because OpenGL context exists only then
 
     -- Try to enable sync-to-vertical-refresh by setting the number 
     -- of buffer swaps per vertical refresh to 1.
