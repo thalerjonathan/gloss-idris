@@ -38,9 +38,10 @@ modules =   Graphics.Gloss
           , Graphics.Gloss.Internals.Rendering.GLUtils
           -- OPENGL
           , Graphics.Rendering.Gl.Buffers
-          , Graphics.Rendering.Gl.Gl41
-          , Graphics.Rendering.Gl.Types
           , Graphics.Rendering.Gl.Config
+          , Graphics.Rendering.Gl.Gl41
+          , Graphics.Rendering.Gl.GLEW
+          , Graphics.Rendering.Gl.Types
           -- INTERFACE
           , Graphics.Gloss.Internals.Interface.Animate.State
           , Graphics.Gloss.Internals.Interface.Backend

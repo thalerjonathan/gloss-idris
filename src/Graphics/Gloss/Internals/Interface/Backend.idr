@@ -5,6 +5,7 @@ import        Data.IORef
 
 import public Graphics.Gloss.Data.Display
 import        Graphics.Rendering.Gl.Gl41 as GL
+import        Graphics.Rendering.Gl.GLEW as GLEW
 import        Graphics.UI.GLFW           as GLFW
 
 mutual
@@ -517,6 +518,7 @@ mutual
   initializeGLFW _ debug = do
     _           <- GLFW.initialize
     glfwVersion <- GLFW.getGlfwVersion
+    _           <- GLEW.glewInit -- don't forget to initialize glew, otherwise crash when using opengl
 
     when debug
       (putStr  $ "  glfwVersion        = " ++ show glfwVersion   ++ "\n")
