@@ -1236,7 +1236,7 @@ glTexEnvi target pname param =
 getFloat4 : GetPName -> IO (GLfloat, GLfloat, GLfloat, GLfloat)
 getFloat4 name = do
   ptr <- floatBuffer 4
-  foreign FFI_C "glGetFloat4" (Int -> Ptr -> IO ()) (toGlInt name) ptr
+  foreign FFI_C "glGetFloatv" (Int -> Ptr -> IO ()) (toGlInt name) ptr
   -- todo can we get rid of the 5th element: unit ()?
   (r, g, b, a, _) <- floatBufferToTup ptr 4
   pure (r, g, b, a)

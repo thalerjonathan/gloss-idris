@@ -3,6 +3,11 @@ module Main
 -- Draw a color wheel.
 import Graphics.Gloss
 
+import Graphics.UI.GLFW.Utils.GlfwConfig
+
+%flag C "-I/usr/include/libdrm -I/usr/include/libpng16 "
+%flag C "-lGLEW -lGLU -lGL -lpng16 -lz "
+
 -- idris Color.idr -o color --package gloss-idris --package glfw-idris-st
 
 main : IO ()

@@ -4,9 +4,8 @@ module Graphics.Gloss.Internals.Interface.Backend
 import        Data.IORef
 
 import public Graphics.Gloss.Data.Display
-
-import Graphics.Rendering.Gl.Gl41 as GL
-import Graphics.UI.GLFW.GLFW      as GLFW
+import        Graphics.Rendering.Gl.Gl41 as GL
+import        Graphics.UI.GLFW           as GLFW
 
 mutual
   ||| State of the GLFW backend library.
@@ -534,13 +533,15 @@ mutual
   openWindowGLFW :  IORef GLFWState
                  -> Display
                  -> IO ()
-  openWindowGLFW _ (InWindow title (sizeX, sizeY) pos) = do
+  openWindowGLFW stateRef (InWindow title (sizeX, sizeY) pos) = do
     let disp = record 
       { displayOptions_width        = sizeX
       , displayOptions_height       = sizeY
       , displayOptions_displayMode  = GLFW.WindowMode } GLFW.defaultDisplayOptions
 
     win <- GLFW.createWindow title disp
+    modifyIORef stateRef (\s => record {winHdl = win } s)
+
     uncurry (GLFW.setWindowPosition win) pos
     
     -- Try to enable sync-to-vertical-refresh by setting the number 
@@ -548,19 +549,20 @@ mutual
     GLFW.setSwapInterval 1
 
   -- TODO: really no idea where (sizeX, sizeY) comes from at this point, they don't show up in the type
-  openWindowGLFW _ (FullScreen) = do --(sizeX, sizeY)) = do
+  openWindowGLFW stateRef (FullScreen) = do --(sizeX, sizeY)) = do
     let disp = record 
       { --displayOptions_width        = sizeX
       --, displayOptions_height       = sizeY
       displayOptions_displayMode  = GLFW.FullscreenMode } GLFW.defaultDisplayOptions
 
     win <- GLFW.createWindow "" disp
+    modifyIORef stateRef (\s => record {winHdl = win } s)
 
     -- Try to enable sync-to-vertical-refresh by setting the number 
     -- of buffer swaps per vertical refresh to 1.
     GLFW.setSwapInterval 1
     GLFW.showMouseCursor win True
-
+    
   -- Dump State -----------------------------------------------------------------
   ||| Print out the internal GLFW state.
   dumpStateGLFW : IORef GLFWState -> IO ()

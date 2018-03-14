@@ -7,6 +7,7 @@ modules =   Graphics.Gloss
           -- DATA
           , Graphics.Gloss.Data.Bitmap
           , Graphics.Gloss.Data.Color
+          , Graphics.Gloss.Data.Controller
           , Graphics.Gloss.Data.Display
           , Graphics.Gloss.Data.Picture
           , Graphics.Gloss.Data.Point
@@ -39,6 +40,7 @@ modules =   Graphics.Gloss
           , Graphics.Rendering.Gl.Buffers
           , Graphics.Rendering.Gl.Gl41
           , Graphics.Rendering.Gl.Types
+          , Graphics.Rendering.Gl.Config
           -- INTERFACE
           , Graphics.Gloss.Internals.Interface.Animate.State
           , Graphics.Gloss.Internals.Interface.Backend
@@ -52,7 +54,8 @@ modules =   Graphics.Gloss
           , Graphics.Gloss.Internals.Interface.ViewState.Reshape
           , Graphics.Gloss.Internals.Interface.Window
 
-pkgs = contrib, glfw-idris-st
+-- pkgs = contrib, glfw-idris-st
+opts = "-p contrib -p glfw-idris-st"
 
 makefile = MakefileGl
 

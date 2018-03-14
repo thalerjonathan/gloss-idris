@@ -1,3 +1,3 @@
-- provide low leve GLFW bindings
+- clean up gl_idris.h and c: remove all unnecessary stuff
 - move Rendering.Gl to Rendering.OpenGL
 - completely rework the whole Backend interface thing, replace by ST and EFfects

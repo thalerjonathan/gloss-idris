@@ -1,3 +1,6 @@
 package color
 
-pkgs = gloss-idris, glfw-idris-st
+opts = "-p gloss-idris -p glfw-idris-st" 
+
+executable = color
+main = Main
