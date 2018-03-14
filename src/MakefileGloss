@@ -1,0 +1,12 @@
+CC = gcc
+CFLAGS = `idris --include` `pkg-config --cflags libpng`
+
+gloss_idris.o: config gloss_idris.c gloss_idris.h 
+
+config: .PHONY
+	echo "%flag C \"`pkg-config --cflags libpng`\"" > Graphics/Gloss/Internals/Codec/PNGConfig.idr
+	echo "%flag C \"`pkg-config --libs libpng`\"" >> Graphics/Gloss/Internals/Codec/PNGConfig.idr
+clean: .PHONY
+	rm gloss_idris.o
+
+.PHONY:

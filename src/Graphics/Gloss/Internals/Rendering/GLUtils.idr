@@ -1,6 +1,7 @@
 module Graphics.Gloss.Internals.Rendering.GLUtils
 
-import Graphics.Rendering.Gl.Gl41
+import Graphics.Rendering.OpenGL.Internal.GLBindings
+import Graphics.Rendering.OpenGL.Internal.Types
 
 import Graphics.Gloss.Internals.Data.Color
 

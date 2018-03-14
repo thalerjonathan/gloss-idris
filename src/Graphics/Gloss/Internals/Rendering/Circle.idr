@@ -1,8 +1,8 @@
 ||| Fast(ish) rendering of circles.
 module Graphics.Gloss.Internals.Rendering.Circle
 
-import Graphics.Rendering.Gl.Types
-import Graphics.Rendering.Gl.Gl41 as GL
+import Graphics.Rendering.OpenGL.Internal.Types
+import Graphics.Rendering.OpenGL.Internal.GLBindings as GL
 
 ||| Decide how many line segments to use to render the circle.
 |||  The number of segments we should use to get a nice picture depends on 

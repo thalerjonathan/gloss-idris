@@ -26,6 +26,7 @@ modules =   Graphics.Gloss
           -- internal stuff ---------------------------
           -- CODEC
           , Graphics.Gloss.Internals.Codec.PNG
+          , Graphics.Gloss.Internals.Codec.PNGConfig
           -- DATA
           , Graphics.Gloss.Internals.Data.Color
           , Graphics.Gloss.Internals.Data.Picture
@@ -36,12 +37,6 @@ modules =   Graphics.Gloss
           , Graphics.Gloss.Internals.Rendering.Picture
           , Graphics.Gloss.Internals.Rendering.State
           , Graphics.Gloss.Internals.Rendering.GLUtils
-          -- OPENGL
-          , Graphics.Rendering.Gl.Buffers
-          , Graphics.Rendering.Gl.Config
-          , Graphics.Rendering.Gl.Gl41
-          , Graphics.Rendering.Gl.GLEW
-          , Graphics.Rendering.Gl.Types
           -- INTERFACE
           , Graphics.Gloss.Internals.Interface.Animate.State
           , Graphics.Gloss.Internals.Interface.Backend
@@ -55,9 +50,8 @@ modules =   Graphics.Gloss
           , Graphics.Gloss.Internals.Interface.ViewState.Reshape
           , Graphics.Gloss.Internals.Interface.Window
 
--- pkgs = contrib, glfw-idris-st
-opts = "-p contrib -p glfw-idris-st"
+opts = "-p contrib -p glfw-idris-st -p gl-idris-b"
 
-makefile = MakefileGl
+makefile = MakefileGloss
 
-objs = gl_idris.o, gl_idris.h
+objs = gloss_idris.o, gloss_idris.h

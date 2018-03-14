@@ -2,7 +2,8 @@ module Graphics.Gloss.Internals.Rendering.Picture
 
 import Data.IORef
 
-import Graphics.Rendering.Gl.Gl41 as GL
+import Graphics.Rendering.OpenGL.Internal.GLBindings as GL
+import Graphics.Rendering.OpenGL.Internal.Types
 
 import Graphics.Gloss.Internals.Data.Color
 import Graphics.Gloss.Internals.Data.Picture

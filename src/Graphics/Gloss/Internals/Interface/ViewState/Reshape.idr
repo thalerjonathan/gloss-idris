@@ -1,7 +1,9 @@
 module Graphics.Gloss.Internals.Interface.ViewState.Reshape
 
 import Data.IORef
-import Graphics.Rendering.Gl.Gl41
+
+import Graphics.Rendering.OpenGL.Internal.GLBindings
+import Graphics.Rendering.OpenGL.Internal.Types
 
 import Graphics.Gloss.Internals.Interface.Backend
 

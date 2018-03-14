@@ -3,8 +3,8 @@ module Graphics.Gloss.Internals.Codec.PNG
 import CFFI.Memory
 import CFFI.Types
 
-%include C "gl_idris.h"
-%link C "gl_idris.o"
+%include C "gloss_idris.h"
+%link C "gloss_idris.o"
 
 -- followed https://groups.google.com/forum/#!topic/idris-lang/EiYRVBENwjc
 

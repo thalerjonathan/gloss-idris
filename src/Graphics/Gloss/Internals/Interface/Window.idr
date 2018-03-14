@@ -3,7 +3,7 @@ module Graphics.Gloss.Internals.Interface.Window
 
 import Data.IORef
 
-import Graphics.Rendering.Gl.Gl41
+import Graphics.Rendering.OpenGL.Internal.GLBindings
 
 import Graphics.Gloss.Internals.Rendering.GLUtils
 import Graphics.Gloss.Data.Color

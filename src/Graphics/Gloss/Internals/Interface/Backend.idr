@@ -3,10 +3,12 @@ module Graphics.Gloss.Internals.Interface.Backend
 
 import        Data.IORef
 
+import        Graphics.Rendering.OpenGL.Internal.GLBindings as GL
+import        Graphics.Rendering.OpenGL.Internal.GLEW as GLEW
+import        Graphics.Rendering.OpenGL.Internal.Types
+import        Graphics.UI.GLFW as GLFW
+
 import public Graphics.Gloss.Data.Display
-import        Graphics.Rendering.Gl.Gl41 as GL
-import        Graphics.Rendering.Gl.GLEW as GLEW
-import        Graphics.UI.GLFW           as GLFW
 
 mutual
   ||| State of the GLFW backend library.

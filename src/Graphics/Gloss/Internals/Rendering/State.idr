@@ -4,7 +4,7 @@ module Graphics.Gloss.Internals.Rendering.State
 import Data.IORef
 import Graphics.Gloss.Internals.Data.Picture
 import Graphics.Gloss.Internals.Rendering.Bitmap
-import Graphics.Rendering.Gl.Types
+import Graphics.Rendering.OpenGL.Internal.Types
 
 ||| A texture that we've sent to OpenGL.
 public export
