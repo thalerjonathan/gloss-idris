@@ -901,17 +901,23 @@ mutual
                   -> Int
                   -> IO (Int, Int)
       setMousePos x y = do
+        putStrLn "setMousePos 1"
         let pos = (x,y)
+        putStrLn "setMousePos 2"
+        -- TODO: crash occurs when evaluating this statement
         modifyIORef stateRef $ \s => record { mousePosition = pos } s
+        putStrLn "setMousePos 3"
         pure pos
 
       callbackMotion :  Int 
                     -> Int
                     -> IO ()
       callbackMotion x y = do
+          putStrLn "callbackMotion"
           pos <- setMousePos x y
 
           -- Call all the Gloss Motion actions with the new state.
+          putStrLn "runMotionClbks before"
           runMotionClbks pos callbacks
           {-
           sequence_ 
@@ -924,6 +930,7 @@ mutual
                         -> IO ()
           runMotionClbks _ [] = pure ()
           runMotionClbks pos (Motion f :: cs) = do
+            putStrLn "runMotionClbks Motion"
             f stateRef pos
             runMotionClbks pos cs
           runMotionClbks _ _ = pure ()
@@ -931,6 +938,7 @@ mutual
 
       mousePositionCallback : MousePositionCallback
       mousePositionCallback win' xpos ypos = unsafePerformIO $ do 
+        putStrLn "mousePositionCallback"
         callbackMotion (cast xpos) (cast ypos)
         pure ()
 
@@ -962,24 +970,36 @@ mutual
   runMainLoopGLFW stateRef = go -- = X.catch go exit
     where
       go : IO ()
-      go = do 
+      go = do
+        putStrLn "1"
         let win = winHdl !(readIORef stateRef)
+        putStrLn "2"
         windowIsOpen <- GLFW.windowIsOpen win
+        putStrLn "3"
         when windowIsOpen 
           $ do  
+            putStrLn "4"
             GLFW.pollEvents
+            putStrLn "5"
             dirty <- map dirtyScreen $ readIORef stateRef
 
             when dirty
               $ do  
+                putStrLn "5a"
                 s <- readIORef stateRef
+                putStrLn "5b"
                 display s
+                putStrLn "5c"
                 GLFW.swapBuffers win
 
+            putStrLn "6"
             modifyIORef stateRef $ \s => record { dirtyScreen = False } s
 
+            putStrLn "7"
             (readIORef stateRef) >>= (\s => idle s)
+            putStrLn "8"
             GLFW.sleep 0.001
+            putStrLn "9"
             runMainLoopGLFW stateRef
 
 
