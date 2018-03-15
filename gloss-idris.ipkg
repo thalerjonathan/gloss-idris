@@ -20,7 +20,9 @@ modules =   Graphics.Gloss
           , Graphics.Gloss.Geometry.Line
 
           -- INTERFACE
+          , Graphics.Gloss.Interface.IO.Animate
           , Graphics.Gloss.Interface.IO.Display
+          , Graphics.Gloss.Interface.Pure.Animate
           , Graphics.Gloss.Interface.Pure.Display
           
           -- internal stuff ---------------------------
