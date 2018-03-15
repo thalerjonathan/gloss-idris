@@ -34,6 +34,8 @@ This textfile reflects thoughts of porting gloss from Haskell to Idris
 	-> GLUT support: gloss can be compiled with GLFW or GLUT being its backend, i scraped GLUT support because I couldn't be bothered to port the code for GLUT and provide low-level bindings for it as GLUT is very outdated and completely replaced by GLFW 
 	-> there are good haskell libraries for both OpenGL and GLFW but porting these to idris would be too much work for me, so i decided to use FFI 
 	-> followed the example of glfw-idris and gl-idris to write a Config file which needs to be included in the package as well otherwise dependencies would complain about missing symbols
+	-> modifyIORef in FFI callback crashes: https://groups.google.com/forum/#!topic/idris-lang/kXVP1NAGBCY
+
 - module system
 	-> public export vs. export
 	-> import as public ...
