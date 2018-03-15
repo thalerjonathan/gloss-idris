@@ -245,14 +245,14 @@ drawPicture state circScale picture =
         => if stateColor state
             then do
               -- oldColor <- get GL.currentColor
-              oldColor <- GL.getFloat4 GL_COLOR_CLEAR_VALUE
+              oldColor <- GL.getFloat4 GL_CURRENT_COLOR
               let RGBA r g b a  = col
               --GL.currentColor  $= GL.Color4 (gf r) (gf g) (gf b) (gf a)
-              GL.glClearColor (gf r) (gf g) (gf b) (gf a)
+              GL.glColor4f (gf r) (gf g) (gf b) (gf a)
               drawPicture state circScale p
               --GL.currentColor  $= oldColor   
               let (or, og, ob, oa) = oldColor  
-              GL.glClearColor (gf or) (gf og) (gf ob) (gf oa) 
+              GL.glColor4f (gf or) (gf og) (gf ob) (gf oa) 
             else drawPicture state circScale p
 
       -- Translation --------------------------
@@ -334,8 +334,8 @@ drawPicture state circScale picture =
         -- Set to opaque
         --oldColor <- get GL.currentColor
         --GL.currentColor $= GL.Color4 1.0 1.0 1.0 1.0
-        (or, og, ob, oa) <- GL.getFloat4 GL_COLOR_CLEAR_VALUE
-        GL.glClearColor 1 1 1 1
+        (or, og, ob, oa) <- GL.getFloat4 GL_CURRENT_COLOR
+        GL.glColor4f 1 1 1 1
 
         -- Draw textured polygon
         --GL.renderPrimitive GL.Polygon
@@ -350,7 +350,7 @@ drawPicture state circScale picture =
 
         -- Restore color
         --GL.currentColor $= oldColor
-        GL.glClearColor (gf or) (gf og) (gf ob) (gf oa) 
+        GL.glColor4f (gf or) (gf og) (gf ob) (gf oa) 
 
         -- Disable texturing
         --GL.texture GL.Texture2D $= GL.Disabled
