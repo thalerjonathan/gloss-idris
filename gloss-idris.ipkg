@@ -22,9 +22,11 @@ modules =   Graphics.Gloss
           -- INTERFACE
           , Graphics.Gloss.Interface.IO.Animate
           , Graphics.Gloss.Interface.IO.Display
+          , Graphics.Gloss.Interface.IO.Simulate
           , Graphics.Gloss.Interface.Pure.Animate
           , Graphics.Gloss.Interface.Pure.Display
-          
+          , Graphics.Gloss.Interface.Pure.Simulate
+
           -- internal stuff ---------------------------
           -- CODEC
           , Graphics.Gloss.Internals.Codec.PNG

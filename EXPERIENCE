@@ -25,6 +25,8 @@ This textfile reflects thoughts of porting gloss from Haskell to Idris
 
 	-> no Float, replaced all by Double (atm i really don't care about this nuance)
 
+	-> arguments in anonymous functions are separated by comma - really no idea why
+
 - FFI
 	-> returning a struct from c for loading a PNG is possible but nowhere described in documentation, with help of mailing list and the idris-dev code on github i was able to figure out how to do it
 	-> straight-forward to create bindings for low level c libs
