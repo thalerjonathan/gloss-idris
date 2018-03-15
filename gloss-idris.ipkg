@@ -43,9 +43,10 @@ modules =   Graphics.Gloss
           , Graphics.Gloss.Internals.Interface.Animate.Timing
           , Graphics.Gloss.Internals.Interface.Backend
           , Graphics.Gloss.Internals.Interface.Common.Exit
-          , Graphics.Gloss.Internals.Interface.Event
           , Graphics.Gloss.Internals.Interface.Display
           , Graphics.Gloss.Internals.Interface.Debug
+          , Graphics.Gloss.Internals.Interface.Event
+          , Graphics.Gloss.Internals.Interface.Game
           , Graphics.Gloss.Internals.Interface.Simulate
           , Graphics.Gloss.Internals.Interface.Simulate.State
           , Graphics.Gloss.Internals.Interface.Simulate.Idle
