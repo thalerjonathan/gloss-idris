@@ -16,7 +16,7 @@ import Graphics.Gloss.Internals.Interface.ViewState.Motion
 import Graphics.Gloss.Internals.Interface.ViewState.Reshape
 import Graphics.Gloss.Internals.Interface.Animate.Timing
 import Graphics.Gloss.Internals.Interface.Animate.State       as AN
-import Graphics.Gloss.Internals.Rendering.State as RS
+import Graphics.Gloss.Internals.Rendering.State               as RS
 
 getsIORef : IORef a -> (a -> r) -> IO r
 getsIORef ref fun = liftA fun $ readIORef ref
