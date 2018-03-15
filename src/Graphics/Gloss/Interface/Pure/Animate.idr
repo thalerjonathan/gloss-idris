@@ -24,5 +24,5 @@ animate display backColor frameFun
                 defaultBackendState
                 True            -- pannable
                 display backColor
-                (return . frameFun) 
-                (const (return ()))
+                (pure . frameFun) 
+                (const (pure ()))

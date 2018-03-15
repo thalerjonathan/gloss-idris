@@ -24,6 +24,8 @@ animateBegin :  Backend GLFWState
              -> IORef GLFWState 
              -> IO () -- DisplayCallback
 animateBegin stateRef backendRef = do
+  putStrLn "animateBegin"
+
   -- write the current time into the display state
   displayTime             <- elapsedTime backendRef
   displayTimeLast         <- stateRef `getsIORef` stateDisplayTime
@@ -39,12 +41,12 @@ animateBegin stateRef backendRef = do
   animateTime    <- stateRef `getsIORef` stateAnimateTime
   animateStart   <- stateRef `getsIORef` stateAnimateStart
 
-{-      when (animateCount `mod` 5 == 0)
+  when (animateCount `mod` 5 == 0)
     $  putStr  $  "  displayTime        = " ++ show displayTime                ++ "\n"
               ++ "  displayTimeLast    = " ++ show displayTimeLast            ++ "\n"
               ++ "  displayTimeElapsed = " ++ show displayTimeElapsed         ++ "\n"
-              ++ "  fps                = " ++ show (truncate $ 1 / displayTimeElapsed)   ++ "\n"
--}      
+              ++ "  fps                = " ++ show (1 / displayTimeElapsed)   ++ "\n"
+     
   when (animate && not animateStart)
     $ modifyIORef stateRef $ \s => record
           { stateAnimateTime       = animateTime + displayTimeElapsed } s
@@ -62,6 +64,8 @@ animateEnd :  Backend GLFWState
            -> IORef GLFWState 
            -> IO () --DisplayCallback
 animateEnd stateRef backendRef = do
+  putStrLn "animateEnd"
+
   -- timing gate, limits the maximum frame frequency (FPS)
   timeClamp       <- stateRef `getsIORef` stateDisplayTimeClamp
 

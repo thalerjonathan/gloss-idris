@@ -973,29 +973,32 @@ mutual
       go = do
         putStrLn "1"
         let win = winHdl !(readIORef stateRef)
-        putStrLn "2"
         windowIsOpen <- GLFW.windowIsOpen win
-        putStrLn "3"
+        putStrLn "2"
         when windowIsOpen 
           $ do  
-            putStrLn "4"
+            putStrLn "3"
             GLFW.pollEvents
-            putStrLn "5"
-            dirty <- map dirtyScreen $ readIORef stateRef
+            putStrLn "4"
+            s <- readIORef stateRef
 
-            when dirty
-              $ do  
-                putStrLn "5a"
-                s <- readIORef stateRef
-                putStrLn "5b"
-                display s
-                putStrLn "5c"
-                GLFW.swapBuffers win
+            let ds = dirtyScreen s
+            putStrLn $ "dirtyScreen = " ++ show ds
+            dirty <- map dirtyScreen $ readIORef stateRef
+            putStrLn "5"
+
+            --when dirty
+              --$ do
+            putStrLn "5a"
+            display s
+            putStrLn "5b"
+            GLFW.swapBuffers win
+            putStrLn "5c"
 
             putStrLn "6"
             modifyIORef stateRef $ \s => record { dirtyScreen = False } s
-
             putStrLn "7"
+
             (readIORef stateRef) >>= (\s => idle s)
             putStrLn "8"
             GLFW.sleep 0.001
@@ -1005,5 +1008,6 @@ mutual
 
   -- Redisplay ------------------------------------------------------------------
   postRedisplayGLFW : IORef GLFWState -> IO ()
-  postRedisplayGLFW stateRef
-    = modifyIORef stateRef $ \s => record { dirtyScreen = True } s
+  postRedisplayGLFW stateRef = do
+    postRedisplayGLFW
+    modifyIORef stateRef $ \s => record { dirtyScreen = True } s
