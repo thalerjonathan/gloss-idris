@@ -58,6 +58,6 @@ This textfile reflects thoughts of porting gloss from Haskell to Idris
 
 - compiling errors sometimes completely misleading
 	-> compiler seems to get confused when there are types from haskell it doesnt like e.g. using [x] instead of List x
-
+	-> idris compiler process sometimes seems to suck up enormous amounts of memory, leading to a system-freeze for a few seconds which is only removed by killing the process, may be due to my use of VsCode?
 - performance
 	-> ?
