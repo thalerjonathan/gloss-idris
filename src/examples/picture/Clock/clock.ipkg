@@ -1,0 +1,6 @@
+package clock
+
+opts = "-p gloss-idris -p glfw-idris-st" 
+
+executable = clock
+main = Main

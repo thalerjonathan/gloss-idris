@@ -1,0 +1,88 @@
+--  A fractal consisting of circles and lines which looks a bit like
+--      the workings of a clock.
+import Graphics.Gloss
+
+-- TODO: can we somehow get rid of this?
+%flag C "-I/usr/include/libdrm -I/usr/include/libpng16 "
+%flag C "-lGLEW -lGLU -lGL -lpng16 -lz "
+
+||| The basic fractal consists of three circles offset from the origin
+||| as follows.
+|||
+|||         1
+|||         |
+|||         .
+|||       /   \
+|||      2     3
+|||
+||| The direction of rotation switches as n increases.
+||| Components at higher iterations also spin faster.
+|||
+clockFractal : Int -> Double -> Picture
+clockFractal 0 s        = Blank
+clockFractal n s        = Pictures [circ1, circ2, circ3, lines]
+ where
+    -- y offset from origin to center of circle 1.
+    a : Double
+    a = 1 / sin (2 * pi / 6)
+
+    -- x offset from origin to center of circles 2 and 3.
+    b : Double
+    b = a * cos (2 * pi / 6)
+
+    nf : Double
+    nf  = cast n
+
+    rot : Double
+    rot = if n `mod` 2 == 0
+            then   50 * s * (log (1 + nf))
+            else (-50 * s * (log (1 + nf)))
+
+    -- each element contains a copy of the (n-1) iteration contained
+    --      within a larger circle, and some text showing the time since 
+    --      the animation started.
+    --
+    circNm1 : Picture
+    circNm1 
+      = Pictures
+            [ circle 1
+            , Scale (a/2.5) (a/2.5) $ clockFractal (n-1) s
+            , if n > 2
+                then Color cyan     
+                            $ Translate (-0.15) 1
+                            $ Scale 0.001 0.001 
+                            $ Text (show s) 
+                else Blank
+            ]
+
+    circ1 : Picture
+    circ1   = Translate 0 a         $ Rotate rot    circNm1
+
+    circ2 : Picture
+    circ2   = Translate 1 (-b)      $ Rotate (-rot) circNm1
+
+    circ3 : Picture
+    circ3   = Translate (-1) (-b)   $ Rotate rot    circNm1
+
+    -- join each iteration to the origin with some lines.
+    lines : Picture
+    lines   
+      = Pictures
+            [ Line [(0, 0), ( 0,  a)]
+            , Line [(0, 0), ( 1, -b)]
+            , Line [(0, 0), (-1, -b)] ]
+
+||| Build the fractal, scale it so it fits in the window
+||| and rotate the whole thing as time moves on.
+frame : Double -> Picture
+frame time
+        = Color white
+        $ Scale 120 120
+        $ Rotate (time * 2*pi)
+        $ clockFractal 5 time
+
+main : IO ()
+main = 
+  animate 
+    (InWindow "Clock" (600, 600) (20, 20))
+    black frame
