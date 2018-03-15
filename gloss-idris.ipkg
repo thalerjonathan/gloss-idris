@@ -46,6 +46,7 @@ modules =   Graphics.Gloss
           , Graphics.Gloss.Internals.Interface.Display
           , Graphics.Gloss.Internals.Interface.Debug
           , Graphics.Gloss.Internals.Interface.Simulate.State
+          , Graphics.Gloss.Internals.Interface.Simulate.Idle
           , Graphics.Gloss.Internals.Interface.ViewState.KeyMouse
           , Graphics.Gloss.Internals.Interface.ViewState.Motion
           , Graphics.Gloss.Internals.Interface.ViewState.Reshape
