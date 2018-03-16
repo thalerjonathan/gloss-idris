@@ -987,13 +987,13 @@ mutual
             dirty <- map dirtyScreen $ readIORef stateRef
             putStrLn "5"
 
-            --when dirty
-              --$ do
-            putStrLn "5a"
-            display s
-            putStrLn "5b"
-            GLFW.swapBuffers win
-            putStrLn "5c"
+            when dirty
+              $ do
+                putStrLn "5a"
+                display s
+                putStrLn "5b"
+                GLFW.swapBuffers win
+                putStrLn "5c"
 
             putStrLn "6"
             modifyIORef stateRef $ \s => record { dirtyScreen = False } s
@@ -1009,5 +1009,5 @@ mutual
   -- Redisplay ------------------------------------------------------------------
   postRedisplayGLFW : IORef GLFWState -> IO ()
   postRedisplayGLFW stateRef = do
-    postRedisplayGLFW
+    putStrLn "postRedisplayGLFW"
     modifyIORef stateRef $ \s => record { dirtyScreen = True } s

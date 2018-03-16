@@ -1,0 +1,6 @@
+package bitmap
+
+opts = "-p gloss-idris -p glfw-idris-st" 
+
+executable = bitmap
+main = Main
