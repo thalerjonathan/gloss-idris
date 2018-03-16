@@ -10,6 +10,7 @@ import        Graphics.Gloss.Internals.Interface.Event
 import        Graphics.Gloss.Internals.Interface.Game
 
 ||| Play a game in a window, using IO actions to build the pictures. 
+export
 playIO  :  Display                      -- ^ Display mode.
         -> Color                        -- ^ Background color.
         -> Int                          -- ^ Number of simulation steps to take for each second of real time.

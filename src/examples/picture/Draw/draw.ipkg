@@ -1,0 +1,6 @@
+package draw
+
+opts = "-p gloss-idris -p glfw-idris-st" 
+
+executable = draw
+main = Main

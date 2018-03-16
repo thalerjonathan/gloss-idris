@@ -13,6 +13,7 @@ import public Graphics.Gloss.Data.ViewPort
 import        Graphics.Gloss.Internals.Interface.Simulate
 import        Graphics.Gloss.Internals.Interface.Backend
 
+export
 simulateIO : Display               -- ^ Display mode.
            -> Color                 -- ^ Background color.
            -> Int                   -- ^ Number of simulation steps to take for each second of real time.

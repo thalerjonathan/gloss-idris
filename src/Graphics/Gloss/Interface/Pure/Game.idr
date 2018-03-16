@@ -8,11 +8,12 @@ module Graphics.Gloss.Interface.Pure.Game
 import public Graphics.Gloss.Data.Display
 import public Graphics.Gloss.Data.Picture
 import public Graphics.Gloss.Data.Color
-import        Graphics.Gloss.Internals.Interface.Backend
+import public Graphics.Gloss.Internals.Interface.Backend
 import        Graphics.Gloss.Internals.Interface.Game
-import        Graphics.Gloss.Internals.Interface.Event
+import public Graphics.Gloss.Internals.Interface.Event
 
 |||| Play a game in a window. Like `simulate`, but you manage your own input events.
+export
 play     : Display              -- ^ Display mode.
         -> Color                -- ^ Background color.
         -> Int                  -- ^ Number of simulation steps to take for each second of real time.
