@@ -1,12 +1,5 @@
 import Graphics.Gloss
 
--- import Effect.System
-
-{-
-import Codec.BMP
-import System.Environment
--}
-
 -- TODO: can we somehow get rid of this?
 %flag C "-I/usr/include/libdrm -I/usr/include/libpng16 "
 %flag C "-lGLEW -lGLU -lGL -lpng16 -lz "

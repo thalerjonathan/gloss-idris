@@ -40,8 +40,8 @@ handleError place err
         => pure ()
       _ 
         => print $ unwords
-        [  "Gloss / OpenGL Internal Error " ++ show place
-        ,  "  Please report this on haskell-gloss@googlegroups.com."
+        [  "Gloss-Idris / OpenGL Internal Error " ++ show place
+        ,  "  Please report this on https://github.com/thalerjonathan/gloss-idris/issues"
         ,  show err ]
 
 checkErrors : String -> IO ()
@@ -190,6 +190,11 @@ freeTexture tex =
 polyCoords : RowOrder -> List (Double, Double)
 polyCoords BottomToTop = [(0,0), (1,0), (1,1), (0,1)]
 polyCoords TopToBottom = [(0,1), (1,1), (1,0), (0,0)]
+
+renderTextureVertex : ((Double, Double), (Double, Double)) -> IO ()
+renderTextureVertex ((tx, ty), (px, py)) = do
+  GL.glTexCoord2f (gf tx) (gf ty)
+  GL.glVertex2f   (gf px) (gf py)
 
 drawPicture : State -> Double -> Picture -> IO ()         
 drawPicture state circScale picture =
@@ -342,10 +347,7 @@ drawPicture state circScale picture =
         let polyCoords = polyCoords (rowOrder (bitmapFormat imgData))
         let poly = List.zip (bitmapPathd (cast width) (cast height)) polyCoords
         GL.glBegin GL_POLYGON
-        {- traverse_ (\((pX, pY), (tX, tY)) => do
-          GL.glTexCoord2f (gf tX) (gf tY)
-          GL.glVertex2f   (gf pX) (gf pY)) poly
-          -}
+        traverse_ renderTextureVertex poly
         GL.glEnd
 
         -- Restore color
