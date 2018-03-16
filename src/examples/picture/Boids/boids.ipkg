@@ -1,0 +1,6 @@
+package boids
+
+opts = "-p gloss-idris -p glfw-idris-st -p effects" 
+
+executable = boids
+main = Main
