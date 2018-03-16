@@ -1,0 +1,6 @@
+package easy
+
+opts = "-p gloss-idris -p glfw-idris-st" 
+
+executable = easy
+main = Main
