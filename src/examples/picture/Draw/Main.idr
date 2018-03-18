@@ -3,9 +3,7 @@
 import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss
 
--- TODO: can we somehow get rid of this?
-%flag C "-I/usr/include/libdrm -I/usr/include/libpng16 "
-%flag C "-lGLEW -lGLU -lGL -lpng16 -lz "
+import Config
 
 ||| The game state.
 -- The current line being drawn and All the lines drawn previously.

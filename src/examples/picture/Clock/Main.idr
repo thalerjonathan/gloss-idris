@@ -2,9 +2,7 @@
 --      the workings of a clock.
 import Graphics.Gloss
 
--- TODO: can we somehow get rid of this?
-%flag C "-I/usr/include/libdrm -I/usr/include/libpng16 "
-%flag C "-lGLEW -lGLU -lGL -lpng16 -lz "
+import Config
 
 ||| The basic fractal consists of three circles offset from the origin
 ||| as follows.

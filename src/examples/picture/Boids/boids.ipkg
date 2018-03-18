@@ -2,5 +2,7 @@ package boids
 
 opts = "-p gloss-idris -p glfw-idris-st -p effects" 
 
+makefile = MakefileConfig
+
 executable = boids
 main = Main

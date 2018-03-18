@@ -2,5 +2,7 @@ package color
 
 opts = "-p gloss-idris -p glfw-idris-st" 
 
+makefile = MakefileConfig
+
 executable = color
 main = Main

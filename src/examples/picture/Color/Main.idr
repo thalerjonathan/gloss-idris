@@ -3,11 +3,7 @@ module Main
 -- Draw a color wheel.
 import Graphics.Gloss
 
-import Graphics.UI.GLFW.Utils.GlfwConfig
-
--- TODO: can we somehow get rid of this?
-%flag C "-I/usr/include/libdrm -I/usr/include/libpng16 "
-%flag C "-lGLEW -lGLU -lGL -lpng16 -lz "
+import Config
 
 main : IO ()
 main = do

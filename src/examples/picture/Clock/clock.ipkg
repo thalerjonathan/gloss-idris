@@ -2,5 +2,7 @@ package clock
 
 opts = "-p gloss-idris -p glfw-idris-st" 
 
+makefile = MakefileConfig
+
 executable = clock
 main = Main

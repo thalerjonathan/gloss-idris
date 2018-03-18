@@ -2,5 +2,7 @@ package draw
 
 opts = "-p gloss-idris -p glfw-idris-st" 
 
+makefile = MakefileConfig
+
 executable = draw
 main = Main

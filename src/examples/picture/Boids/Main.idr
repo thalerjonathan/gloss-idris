@@ -15,9 +15,7 @@ import Graphics.Gloss.Interface.Pure.Simulate
 import KDTree2d
 import Vec2
 
--- TODO: can we somehow get rid of this?
-%flag C "-I/usr/include/libdrm -I/usr/include/libpng16 "
-%flag C "-lGLEW -lGLU -lGL -lpng16 -lz "
+import Config
 
 -- Parameters -----------------------------------------------------------------
 cParam : Double
