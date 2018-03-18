@@ -1,0 +1,8 @@
+package conway
+
+opts = "-p gloss-idris -p glfw-idris-st" 
+
+makefile = MakefileConfig
+
+executable = conway
+main = Main
