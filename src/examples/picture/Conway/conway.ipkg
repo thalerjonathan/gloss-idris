@@ -1,6 +1,6 @@
 package conway
 
-opts = "-p gloss-idris -p glfw-idris-st" 
+opts = "-p gloss-idris -p glfw-idris-st -p effects" 
 
 makefile = MakefileConfig
 
