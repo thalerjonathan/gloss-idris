@@ -48,9 +48,9 @@ coordOfIndex world i
 ||| Make a new world of a particular size.
 randomWorld : (Int, Int) -> Eff ConwayWorld [RND]
 randomWorld (width, height) = do
-    bools <- for [1 .. (width * height)] (const rndBool)
+    --bools <- for [1 .. (width * height)] (const rndBool)
     pure $ MkConwayWorld
-            map cellOfBool bools -- worldCells
+            [] --(map cellOfBool bools) -- worldCells
             width -- worldWidth
             height -- worldHeight
             5 -- worldCellSize
@@ -59,12 +59,12 @@ randomWorld (width, height) = do
             0.1 -- worldSimulationPeriod
             0   -- worldElapsedTime
   where
-    rndBool : Eff ConwayWorld [RND]
+    rndBool : Eff Bool [RND]
     rndBool = do
       r <- rndInt 0 1
       if 0 == r
-        then False
-        else True
+        then pure False
+        else pure True
 
 ||| Convert a bool to a live or dead cell.
 cellOfBool : Bool -> Cell
@@ -76,7 +76,7 @@ getCell : ConwayWorld -> Coord -> Cell
 getCell world coord@(x, y) =
   if x < 0 || (x >= (worldWidth world)) || y < 0 || (y >= (worldHeight world))
     then CellDead
-    else index (indexOfCoord world coord) (worldCells world)
+    else index (indexOfCoord world coord) (worldCells world) 
 
 ||| Get the neighbourhood of cells aroudn this coordinate.
 getNeighbourhood : ConwayWorld -> Coord -> List Cell
@@ -105,8 +105,8 @@ stepWorld : ConwayWorld -> ConwayWorld
 stepWorld world
     = record { worldCells = map (stepIndex world) (zip [0 .. n] (worldCells world)) } world
   where
-    n : Int
-    n = length $ worldCells world
+    n : Nat
+    n = Prelude.List.length $ worldCells world
 
 ||| Simulation function for worlds.
 simulateWorld : ViewPort -> Double -> ConwayWorld -> ConwayWorld
