@@ -1,0 +1,8 @@
+CC = gcc
+CFLAGS = `idris --include` `pkg-config --cflags glfw3 glew libpng`
+
+config: .PHONY
+	echo "%flag C \"`pkg-config --cflags glfw3 glew libpng`\"" > Config.idr
+	echo "%flag C \"`pkg-config --libs glfw3 glew libpng`\"" >> Config.idr
+
+.PHONY:
