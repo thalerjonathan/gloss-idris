@@ -1,22 +1,23 @@
 module Main
 
+import Effects
+import Effect.Random
+
 import Graphics.Gloss
 
 import Cell
 import Config
 import World
 
--- import qualified Data.Vector    as Vec
-
 ||| Convert a cell at a particular coordinate to a picture.
-drawCell : World -> Index -> Cell -> Picture
-drawCell world index cell 
- = let  cs      = cast (worldCellSize world)
-        cp      = cast (worldCellSpace world)
+drawCell : ConwayWorld -> (Index, Cell) -> Picture
+drawCell world (index, cell)
+ = let  cs      = worldCellSize world
+        cp      = worldCellSpace world
 
         (x, y)  = coordOfIndex world index
-        fx      = cast x * (cs + cp) + 1
-        fy      = cast y * (cs + cp) + 1
+        fx      = x * (cs + cp) + 1
+        fy      = y * (cs + cp) + 1
 
    in   pictureOfCell
                 (worldCellOldAge world)
@@ -26,7 +27,7 @@ drawCell world index cell
                 cell
 
 ||| Get the size of the window needed to display a world.
-windowSizeOfWorld : World -> (Int, Int)
+windowSizeOfWorld : ConwayWorld -> (Int, Int)
 windowSizeOfWorld world
  = let  cellSize        = worldCellSize world
         cellSpace       = worldCellSpace world
@@ -36,7 +37,7 @@ windowSizeOfWorld world
    in   (width, height)
 
 ||| Convert a world to a picture.
-drawWorld : World -> Picture
+drawWorld : ConwayWorld -> Picture
 drawWorld world 
  = let  (windowWidth, windowHeight)     
                 = windowSizeOfWorld world
@@ -45,14 +46,19 @@ drawWorld world
         offsetY = - cast windowHeight / 2 
    in   Translate offsetX offsetY
                 $ Pictures 
-                $ Vec.toList 
-                $ Vec.imap (drawCell world) (worldCells world)
+                $ map (drawCell world) cs
+  where
+    n : Int
+    n = toIntNat $ Prelude.List.length $ worldCells world
+
+    cs : List (Int, Cell)
+    cs = zip [0 .. n] (worldCells world)
 
 main : IO ()
 main = do   
   let width       = 150
   let height      = 100
-  world <- run $ randomWorld (width, height)
+  world <- run $ randomWorld width height
   
   simulate (InWindow "John Conway's Game of Life" 
                       (windowSizeOfWorld world) (5, 5))

@@ -45,45 +45,65 @@ coordOfIndex world i
   = ( i `mod` worldWidth world
     , i `div` worldWidth world)
 
-||| Make a new world of a particular size.
-randomWorld : (Int, Int) -> Eff ConwayWorld [RND]
-randomWorld (width, height) = do
-    --bools <- for [1 .. (width * height)] (const rndBool)
-    pure $ MkConwayWorld
-            [] --(map cellOfBool bools) -- worldCells
-            width -- worldWidth
-            height -- worldHeight
-            5 -- worldCellSize
-            1 -- worldCellSpace
-            20 -- worldCellOldAge
-            0.1 -- worldSimulationPeriod
-            0   -- worldElapsedTime
-  where
-    rndBool : Eff Bool [RND]
-    rndBool = do
-      r <- rndInt 0 1
-      if 0 == r
-        then pure False
-        else pure True
-
 ||| Convert a bool to a live or dead cell.
 cellOfBool : Bool -> Cell
 cellOfBool True = CellAlive 0
 cellOfBool False = CellDead
 
+||| Make a new world of a particular size.
+randomWorld : Int -> Int -> Eff ConwayWorld [RND]
+randomWorld width height = do
+    bs <- randomWorldAux (width * height) []
+    pure $ MkConwayWorld
+            (map cellOfBool bs) -- worldCells
+            width               -- worldWidth
+            height              -- worldHeight
+            5                   -- worldCellSize
+            1                   -- worldCellSpace
+            20                  -- worldCellOldAge
+            0.1                 -- worldSimulationPeriod
+            0                   -- worldElapsedTime
+  where
+    rndBool : Eff Bool [RND]
+    rndBool = do
+      r <- rndInt 0 2
+      if 0 == r
+        then pure False
+        else pure True
+
+    randomWorldAux : Int -> List Bool -> Eff (List Bool) [RND]
+    randomWorldAux 0 acc = pure acc
+    randomWorldAux n acc = do
+      r <- rndBool
+      randomWorldAux (n - 1) (r :: acc)
+
 ||| Get the cell at a particular coordinate in the world.
 getCell : ConwayWorld -> Coord -> Cell
 getCell world coord@(x, y) =
-  if x < 0 || (x >= (worldWidth world)) || y < 0 || (y >= (worldHeight world))
-    then CellDead
-    else index (indexOfCoord world coord) (worldCells world) 
+    if x < 0 || (x >= (worldWidth world)) || y < 0 || (y >= (worldHeight world))
+      then CellDead
+      else fromMaybe CellDead mayCell
+  where
+    iInt : Int
+    iInt = indexOfCoord world coord
+
+    iInteger : Integer
+    iInteger = cast iInt
+
+    iNat : Nat
+    iNat = fromIntegerNat iInteger
+
+    mayCell : Maybe Cell
+    mayCell = Prelude.List.index' iNat (worldCells world)
 
 ||| Get the neighbourhood of cells aroudn this coordinate.
 getNeighbourhood : ConwayWorld -> Coord -> List Cell
 getNeighbourhood world (ix, iy) = map (getCell world) indexes
   where
     indexes : List Coord
-    indexes = [] -- TODO: why doesnt it compile ? [ (x, y) | x <- [ix - 1 .. ix + 1], y <- [iy - 1 .. iy + 1], not (x == ix && y == iy) ]
+    indexes = [ (x, y) | x <- [(ix - 1) .. (ix + 1)]
+                       , y <- [(iy - 1) .. (iy + 1)]
+                       , not (x == ix && y == iy) ]
 
 ||| Compute the next cell state depending on its neighbours.
 stepCell : Cell -> List Cell -> Cell
@@ -95,7 +115,7 @@ stepCell cell neighbours
 
 ||| Compute the next state of the cell at this index in the world.
 stepIndex : ConwayWorld -> (Int, Cell) -> Cell
-stepIndex world index cell
+stepIndex world (index, cell)
  = let  coord   = coordOfIndex world index
         neigh   = getNeighbourhood world coord
    in   stepCell cell neigh
@@ -103,10 +123,13 @@ stepIndex world index cell
 ||| Compute the next world state.
 stepWorld : ConwayWorld -> ConwayWorld
 stepWorld world
-    = record { worldCells = map (stepIndex world) (zip [0 .. n] (worldCells world)) } world
+    = record { worldCells = map (stepIndex world) cs } world
   where
-    n : Nat
-    n = Prelude.List.length $ worldCells world
+    n : Int
+    n = toIntNat $ Prelude.List.length $ worldCells world
+
+    cs : List (Int, Cell)
+    cs = zip [0 .. n] (worldCells world)
 
 ||| Simulation function for worlds.
 simulateWorld : ViewPort -> Double -> ConwayWorld -> ConwayWorld
