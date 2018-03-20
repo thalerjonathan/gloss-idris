@@ -20,6 +20,7 @@ modules =   Graphics.Gloss
           , Graphics.Gloss.Geometry.Line
 
           -- INTERFACE
+          , Graphics.Gloss.Interface.Environment
           , Graphics.Gloss.Interface.IO.Animate
           , Graphics.Gloss.Interface.IO.Display
           , Graphics.Gloss.Interface.IO.Game
