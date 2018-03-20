@@ -579,29 +579,31 @@ mutual
   dumpStateGLFW : IORef GLFWState -> IO ()
   dumpStateGLFW stateRef = do
     s           <- readIORef stateRef
-    (ww,wh)     <- GLFW.getWindowDimensions (winHdl s)
+    let win = (winHdl s) 
 
-    r           <- GLFW.getWindowValue NumRedBits
-    g           <- GLFW.getWindowValue NumGreenBits
-    b           <- GLFW.getWindowValue NumBlueBits
-    a           <- GLFW.getWindowValue NumAlphaBits
+    (ww,wh)     <- GLFW.getWindowDimensions win
+
+    r           <- GLFW.getWindowValue win NumRedBits
+    g           <- GLFW.getWindowValue win NumGreenBits
+    b           <- GLFW.getWindowValue win NumBlueBits
+    a           <- GLFW.getWindowValue win NumAlphaBits
     let rgbaBD  = [r,g,b,a]
 
-    depthBD     <- GLFW.getWindowValue NumDepthBits
+    depthBD     <- GLFW.getWindowValue win NumDepthBits
 
-    ra          <- GLFW.getWindowValue NumAccumRedBits
-    ga          <- GLFW.getWindowValue NumAccumGreenBits
-    ba          <- GLFW.getWindowValue NumAccumBlueBits
-    aa          <- GLFW.getWindowValue NumAccumAlphaBits
+    ra          <- GLFW.getWindowValue win NumAccumRedBits
+    ga          <- GLFW.getWindowValue win NumAccumGreenBits
+    ba          <- GLFW.getWindowValue win NumAccumBlueBits
+    aa          <- GLFW.getWindowValue win NumAccumAlphaBits
     let accumBD = [ra,ga,ba,aa]
 
-    stencilBD   <- GLFW.getWindowValue NumStencilBits
+    stencilBD   <- GLFW.getWindowValue win NumStencilBits
 
-    auxBuffers  <- GLFW.getWindowValue NumAuxBuffers
+    auxBuffers  <- GLFW.getWindowValue win NumAuxBuffers
 
-    fsaaSamples <- GLFW.getWindowValue NumFsaaSamples
+    fsaaSamples <- GLFW.getWindowValue win NumFsaaSamples
 
-  {- TODO: seems to let idris compiler hang
+    {- TODO: seems to let idris compiler hang
     putStr  $ "* dumpGlfwState\n"
             ++ " windowWidth  = " ++ show ww          ++ "\n"
             ++ " windowHeight = " ++ show wh          ++ "\n"
@@ -612,7 +614,8 @@ mutual
             ++ " aux Buffers  = " ++ show auxBuffers  ++ "\n"
             ++ " FSAA Samples = " ++ show fsaaSamples ++ "\n"
             ++ "\n"
-  -}
+    -}
+    
     putStr  $ "* dumpGlfwState\n"
 
 
