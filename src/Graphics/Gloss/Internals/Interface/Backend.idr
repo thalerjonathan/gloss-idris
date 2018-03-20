@@ -54,7 +54,6 @@ mutual
           = CharKey     Char
           | SpecialKey  SpecialKeyData
           | MouseButton MouseButtonData
-          --deriving (Show, Eq, Ord)
 
   public export
   data MouseButtonData
@@ -64,13 +63,11 @@ mutual
           | WheelUp
           | WheelDown
           | AdditionalButton Int
-          --deriving (Show, Eq, Ord)
 
   public export
   data KeyState
           = Down
           | Up
-          --deriving (Show, Eq, Ord)
 
   public export
   data SpecialKeyData
@@ -140,7 +137,6 @@ mutual
           | KeyPadDecimal
           | KeyPadEqual
           | KeyPadEnter
-          --deriving (Show, Eq, Ord)
 
   public export
   record Modifiers where
@@ -148,7 +144,6 @@ mutual
     shift : KeyState
     ctrl  : KeyState
     alt   : KeyState
-    -- deriving (Show, Eq, Ord)
 
   ||| The functions every backend window managed backend needs to support.
   |||
