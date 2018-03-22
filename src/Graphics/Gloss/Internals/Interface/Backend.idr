@@ -388,10 +388,10 @@ charToSpecial c = case (cast {to=Int} c) of
   63277 => SpecialKey KeyPageDown
   _     => CharKey c
 
-interface GLFWKey a where
+interface GlfwKey a where
   fromGLFW : a -> Key
 
-GLFWKey GLFW.GLFWKey where
+GlfwKey GLFW.GlfwKey where
   fromGLFW key = case key of
     GLFW.CharKey c      => charToSpecial (toLower c)
     GLFW.KeySpace       => SpecialKey KeySpace
@@ -453,7 +453,7 @@ GLFWKey GLFW.GLFWKey where
     GLFW.KeyPadEnter    => SpecialKey KeyPadEnter
     _                   => SpecialKey KeyUnknown
 
-GLFWKey GLFW.GLFWMouseButton where
+GlfwKey GLFW.GlfwMouseButton where
   fromGLFW mouse = case mouse of
     GLFW.MouseButton1 => MouseButton LeftButton
     GLFW.MouseButton2 => MouseButton RightButton
@@ -697,7 +697,7 @@ mutual
 
   -- KeyMouse -----------------------------------------------------------------------
   setModifiers :  IORef GLFWState
-              -> GLFW.GLFWKey 
+              -> GLFW.GlfwKey 
               -> Bool
               -> IO (Bool, GLFWState)
   setModifiers stateRef key pressed = do
@@ -748,7 +748,7 @@ mutual
       GLFW.setMouseWheelCallback  (winHdl s) !mouseWheelCallbackPtr
     where
       -- GLFW calls this on a non-character keyboard action.
-      callbackKeyboard : GLFW.GLFWKey 
+      callbackKeyboard : GLFW.GlfwKey 
                       -> Bool
                       -> IO ()
       callbackKeyboard key keystate = do
@@ -795,7 +795,7 @@ mutual
           runKeyMouseClbk stateRef key' keystate' mods pos callbacks
 
       -- GLFW calls on this when the user clicks or releases a mouse button.
-      callbackMouseButton :  GLFW.GLFWMouseButton
+      callbackMouseButton :  GLFW.GlfwMouseButton
                           -> Bool
                           -> IO ()
       callbackMouseButton key keystate = do
@@ -842,8 +842,8 @@ mutual
           let mglfwAct = GLFW.glfwKeyActionFromInt action
           keyCallbackAux mglfwKey mglfwAct
         where
-          keyCallbackAux :  Maybe GLFWKey
-                         -> Maybe GLFWKeyAction
+          keyCallbackAux :  Maybe GlfwKey
+                         -> Maybe GlfwKeyAction
                          -> IO ()
           keyCallbackAux (Just glfwKey) (Just Press)   = callbackKeyboard glfwKey True
           keyCallbackAux (Just glfwKey) (Just Release) = callbackKeyboard glfwKey False
@@ -867,8 +867,8 @@ mutual
 
           mouseButtonCallbackAux mglfwMb mglfwAct
         where
-          mouseButtonCallbackAux :  Maybe GLFWMouseButton
-                                 -> Maybe GLFWKeyAction
+          mouseButtonCallbackAux :  Maybe GlfwMouseButton
+                                 -> Maybe GlfwKeyAction
                                  -> IO ()
           mouseButtonCallbackAux (Just glfwMb) (Just Press)   = callbackMouseButton glfwMb True
           mouseButtonCallbackAux (Just glfwMb) (Just Release) = callbackMouseButton glfwMb False
