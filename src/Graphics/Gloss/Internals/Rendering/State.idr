@@ -10,8 +10,6 @@ import Graphics.Rendering.OpenGL.Internal.Types
 public export
 record Texture where
   constructor MkTexture
-  ||| Stable name derived from the `BitmapData` that the user gives us.
-  texName : Int
   ||| Width of the image, in pixels.
   texWidth : Int
   ||| Height of the image, in pixels.

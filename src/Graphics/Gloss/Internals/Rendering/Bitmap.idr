@@ -17,7 +17,7 @@ data RowOrder =
 
 ||| Pixel formats describe the order of the color channels in memory.
 public export
-data PixelFormat = PxRGBA | PxABGR
+data PixelFormat = PxRGB | PxRGBA
 
 ||| Description of how the bitmap is layed out in memory.
 ||| 
@@ -37,10 +37,23 @@ record BitmapData where
   bitmapFormat     : BitmapFormat
   bitmapPointer    : Ptr -- Int --(ForeignPtr Word8)
 
-{-
+public export
+Show RowOrder where
+  show TopToBottom = "TopToBottom"
+  show BottomToTop = "BottomToTop"
+
+public export
+Show PixelFormat where
+  show PxRGB = "PxRGB"
+  show PxRGBA = "PxRGBA"
+
+public export
+Show BitmapFormat where
+  show (MkBitmapFormat ro pf) = "BitmapFormat rowOrder: " ++ show ro ++ " pixelFormat: " ++ show pf
+
+public export
 Show BitmapData where
- show _ = "BitmapData"
--}
+ show (MkBitmapData l f p) = "BitmapData bitmapDataLength: " ++ show l ++ " bitmapFormat: " ++ show f
 
 ||| Generates the point path to display the bitmap centred
 export

@@ -132,33 +132,7 @@ bitmapOfForeignPtr width height fmt ptr cacheMe
         bdata   = MkBitmapData len fmt ptr
    in   Bitmap width height bdata cacheMe
 
-{-
-||| O(size). Copy a `ByteString` of RGBA data into a bitmap with the given
-|||  width and height.
-|||
-|||  The boolean flag controls whether Gloss should cache the data
-|||  between frames for speed. If you are programatically generating
-|||  the image for each frame then use `False`. If you have loaded it
-|||  from a file then use `True`.
-export
-bitmapOfByteString : Int -> Int -> BitmapFormat -> Buffer -> Bool -> Picture
-bitmapOfByteString width height fmt buffer cacheMe
- = unsafePerformIO $ do
-  let len = width * height * 4
-  ptr  <- mallocBytes len
-  fptr <- newForeignPtr finalizerFree ptr
-
-  BSU.unsafeUseAsCString bs
-    $ \cstr => copyBytes ptr (castPtr cstr) len
-
-
-  let bdata = BitmapData len fmt fptr
-  return $ Bitmap width height bdata cacheMe
-{-# NOINLINE bitmapOfByteString #-}
--}
-
 ||| O(size). Copy a `PNG` file into a bitmap.
--- TODO: respect format? what if the PNG has no alpha channel?
 export
 bitmapOfPNG : PNG -> Picture
 bitmapOfPNG png =
@@ -167,29 +141,17 @@ bitmapOfPNG png =
       format = pngFormat png
       ptr    = pngDataRaw png
 
+      -- todo: is this right?
       len    = width * height * 4
 
-      bdata  = MkBitmapData len (MkBitmapFormat BottomToTop PxRGBA) ptr
+      pixFormat = 
+        case format of
+          RGB  => PxRGB
+          RGBA => PxRGBA
+
+      -- a PNG is top-to-bottom
+      bdata  = MkBitmapData len (MkBitmapFormat TopToBottom pixFormat) ptr
   in  Bitmap width height bdata True
-
-    
-{-
- = unsafePerformIO
- $ do   let (width, height)     = bmpDimensions bmp
-        let bs                  = unpackBMPToRGBA32 bmp
-        let len                 = width * height * 4
-
-        ptr     <- mallocBytes len
-        fptr    <- newForeignPtr finalizerFree ptr
-
-        BSU.unsafeUseAsCString bs
-         $ \cstr => copyBytes ptr (castPtr cstr) len
-
-        let bdata = BitmapData len (BitmapFormat BottomToTop PxRGBA) fptr
-
-        pure $ Bitmap width height bdata True
-        -}
-{-# NOINLINE bitmapOfBMP #-}
 
 ||| Load an uncompressed 24 or 32bit RGBA PNG file as a bitmap.
 export

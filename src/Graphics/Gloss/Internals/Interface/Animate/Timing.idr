@@ -39,11 +39,13 @@ animateBegin stateRef backendRef = do
   animateTime    <- stateRef `getsIORef` stateAnimateTime
   animateStart   <- stateRef `getsIORef` stateAnimateStart
 
+{-
   when (animateCount `mod` 5 == 0)
     $  putStr  $  "  displayTime        = " ++ show displayTime                ++ "\n"
               ++ "  displayTimeLast    = " ++ show displayTimeLast            ++ "\n"
               ++ "  displayTimeElapsed = " ++ show displayTimeElapsed         ++ "\n"
               ++ "  fps                = " ++ show (1 / displayTimeElapsed)   ++ "\n"
+  -}
      
   when (animate && not animateStart)
     $ modifyIORef stateRef $ \s => record

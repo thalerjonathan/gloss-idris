@@ -86,6 +86,18 @@ vertexPFs ((x, y) :: rest) = do
   GL.glVertex2f x y
   vertexPFs rest
 
+getInternalFormat : BitmapData -> GLsizei
+getInternalFormat bd = 
+  case pixelFormat $ bitmapFormat bd of
+      PxRGB  => GL_RGB8 
+      PxRGBA => GL_RGBA8
+
+getGlFormat : BitmapData -> Graphics.Rendering.OpenGL.Internal.GLBindings.PixelFormat.PixelFormat
+getGlFormat bd =
+  case pixelFormat $ bitmapFormat bd of
+      PxRGB  => GL_RGB 
+      PxRGBA => GL_RGBA
+
 -- Textures -------------------------------------------------------------------
 ||| Install a texture into OpenGL.
 installTexture :  Int 
@@ -95,13 +107,9 @@ installTexture :  Int
                -> IO Texture
 installTexture width height bitmapData cacheMe = do
   let ptr = bitmapPointer bitmapData
-{-
-  let fmt = bitmapFormat bitmapData
-  let glFormat 
-          = case pixelFormat fmt of
-                  PxABGR => GL_RGBA -- TODO: not sure what to do in this case
-                  PxRGBA => GL_RGBA
--}
+
+  let internalFormat = getInternalFormat bitmapData
+  let glFormat = getGlFormat bitmapData
 
   -- Allocate texture handle for texture
   (tex :: _) <- GL.glGenTextures 1
@@ -114,41 +122,15 @@ installTexture width height bitmapData cacheMe = do
   GL.glTexImage2D
     GL_TEXTURE_2D     -- target
     0                 -- level
-    GL_RGBA           -- TODO internal format, what if pixelformat is ABGR??
+    internalFormat           -- internal format, 
     width    -- width
     height   -- height
     0                 -- border, must be 0
-    GL_RGBA           -- TODO: not sure if this is correct glFormat          -- format of the pixel data
+    glFormat           -- format of the pixel data
     GL_UNSIGNED_BYTE  -- data type of the pixel data
     ptr               -- the pointer to image data in memory
-    {-
-      GL.texImage2D
-          GL.Texture2D
-          GL.NoProxy
-          0
-          GL.RGBA8
-          (GL.TextureSize2D
-                  (gsizei width)
-                  (gsizei height))
-          0
-          (GL.PixelData glFormat GL.UnsignedByte ptr)
-  -}
 
-  -- Make a stable name that we can use to identify this data again.
-  -- If the user gives us the same texture data at the same size then we
-  -- can avoid loading it into texture memory again.
-  -- TODO name <- makeStableName bitmapData
-  let name = 0
-
-  pure $ MkTexture name width height ptr tex cacheMe
-  {-
-          { texName       = name
-          , texWidth      = width
-          , texHeight     = height
-          , texData       = fptr
-          , texObject     = tex
-          , texCacheMe    = cacheMe }
--}
+  pure $ MkTexture width height ptr tex cacheMe
 
 ||| Load a texture.
 |||   If we've seen it before then use the pre-installed one from the texture
@@ -159,8 +141,6 @@ loadTexture : IORef (List Texture)
             -> IO Texture
 loadTexture refTextures width height imgData cacheMe = do   
   textures <- readIORef refTextures
-  -- Try and find this same texture in the cache.
-  --name <- makeStableName imgData
 
   let mTexCached
           = find (\tex => texData  tex == bitmapPointer imgData 
@@ -169,7 +149,8 @@ loadTexture refTextures width height imgData cacheMe = do
           textures
 
   case mTexCached of
-    Just tex => pure tex
+    Just tex => do
+      pure tex
 
     Nothing => do
       tex <- installTexture width height imgData cacheMe
@@ -316,7 +297,7 @@ drawPicture state circScale picture =
         -- Load the image data into a texture,
         -- or grab it from the cache if we've already done that before.
         tex <- loadTexture (stateTextures state) width height imgData cacheMe
-  
+        
         -- Set up wrap and filtering mode
         --GL.textureWrapMode GL.Texture2D GL.S $= (GL.Repeated, GL.Repeat)
         --GL.textureWrapMode GL.Texture2D GL.T $= (GL.Repeated, GL.Repeat)
