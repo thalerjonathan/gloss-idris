@@ -1,0 +1,8 @@
+package zen
+
+opts = "-p gloss-idris -p glfw-idris-st" 
+
+makefile = MakefileConfig
+
+executable = zen
+main = Main
