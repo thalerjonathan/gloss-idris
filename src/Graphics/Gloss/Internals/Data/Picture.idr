@@ -5,30 +5,6 @@ import Graphics.Gloss.Internals.Codec.PNG
 import Graphics.Gloss.Internals.Data.Color
 import Graphics.Gloss.Internals.Rendering.Bitmap
 
-{-
-        |||* Bitmaps
-        , BitmapData, PixelFormat(..), BitmapFormat(..), RowOrder(..)
-        , bitmapOfForeignPtr
-        , bitmapOfByteString
-        , bitmapOfBMP
-        , loadBMP)
-where
-import Graphics.Gloss.Internals.Data.Color
-import Graphics.Gloss.Internals.Rendering.Bitmap
-import Codec.BMP
-import Foreign.ForeignPtr
-import Foreign.Marshal.Alloc
-import Foreign.Marshal.Utils
-import Foreign.Ptr
-import Data.Word
-import Data.Monoid
-import Data.ByteString
-import Data.Data
-import System.IO.Unsafe
-import qualified Data.ByteString.Unsafe as BSU
-import Prelude hiding (map)
--}
-
 ||| A point on the x-y plane.
 public export
 Point : Type
@@ -43,7 +19,6 @@ public export
 Num Point where
   (+) (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
   (*) (x1, y1) (x2, y2) = (x1 * x2, y1 * y2)
-  --signum (x, y)       = (signum x, signum y)
   fromInteger x         = (fromInteger x, fromInteger x)
 
 public export
@@ -68,67 +43,67 @@ Path = List Point
 ||| A 2D picture
 public export
 data Picture =
-        |||Primitives -------------------------------------
+  |||Primitives -------------------------------------
 
-        ||| A blank picture, with nothing in it.
-        Blank        |
+  ||| A blank picture, with nothing in it.
+  Blank        |
 
-        ||| A convex polygon filled with a solid color.
-        Polygon Path |
-        
-        ||| A line along an arbitrary path.
-        Line Path    |
+  ||| A convex polygon filled with a solid color.
+  Polygon Path |
+  
+  ||| A line along an arbitrary path.
+  Line Path    |
 
-        ||| A circle with the given radius.
-        Circle Double |
+  ||| A circle with the given radius.
+  Circle Double |
 
-        ||| A circle with the given thickness and radius.
-        |||  If the thickness is 0 then this is equivalent to `Circle`.
-        ThickCircle Double Double |
+  ||| A circle with the given thickness and radius.
+  |||  If the thickness is 0 then this is equivalent to `Circle`.
+  ThickCircle Double Double |
 
-        ||| A circular arc drawn counter-clockwise between two angles 
-        |||  (in degrees) at the given radius.
-        Arc Double Double Double |
+  ||| A circular arc drawn counter-clockwise between two angles 
+  |||  (in degrees) at the given radius.
+  Arc Double Double Double |
 
-        ||| A circular arc drawn counter-clockwise between two angles 
-        |||  (in degrees), with the given radius  and thickness.
-        |||   If the thickness is 0 then this is equivalent to `Arc`.
-        ThickArc Double Double Double Double |
+  ||| A circular arc drawn counter-clockwise between two angles 
+  |||  (in degrees), with the given radius  and thickness.
+  |||   If the thickness is 0 then this is equivalent to `Arc`.
+  ThickArc Double Double Double Double |
 
-        ||| Some text to draw with a vector font.
-        Text String |
+  ||| Some text to draw with a vector font.
+  Text String |
 
-        ||| A bitmap image with a width, height and some 32-bit RGBA
-        |||  bitmap data.
-        |||
-        ||| The boolean flag controls whether Gloss should cache the data
-        ||| in GPU memory between frames. If you are programatically generating
-        ||| the image for each frame then use @False@. If you have loaded it
-        ||| from a file then use @True@. 
-        ||| Setting @False@ for static images will make rendering slower
-        ||| than it needs to be.
-        ||| Setting @True@  for dynamically generated images will cause a
-        ||| GPU memory leak.
-        Bitmap Int Int BitmapData Bool |
+  ||| A bitmap image with a width, height and some 32-bit RGBA
+  |||  bitmap data.
+  |||
+  ||| The boolean flag controls whether Gloss should cache the data
+  ||| in GPU memory between frames. If you are programatically generating
+  ||| the image for each frame then use @False@. If you have loaded it
+  ||| from a file then use @True@. 
+  ||| Setting @False@ for static images will make rendering slower
+  ||| than it needs to be.
+  ||| Setting @True@  for dynamically generated images will cause a
+  ||| GPU memory leak.
+  Bitmap Int Int BitmapData Bool |
 
-        ||| Color ------------------------------------------
-        ||| A picture drawn with this color.
-        Color Color Picture |
+  ||| Color ------------------------------------------
+  ||| A picture drawn with this color.
+  Color Color Picture |
 
-        ||| Transforms -------------------------------------
-        ||| A picture translated by the given x and y coordinates.
-        Translate Double Double Picture |
+  ||| Transforms -------------------------------------
+  ||| A picture translated by the given x and y coordinates.
+  Translate Double Double Picture |
 
-        ||| A picture rotated clockwise by the given angle (in degrees).
-        Rotate Double Picture |
+  ||| A picture rotated clockwise by the given angle (in degrees).
+  Rotate Double Picture |
 
-        ||| A picture scaled by the given x and y factors.
-        Scale Double Double Picture |
+  ||| A picture scaled by the given x and y factors.
+  Scale Double Double Picture |
 
-        ||| More Pictures ----------------------------------
-        ||| A picture consisting of several others.
-        Pictures (List Picture)
-        -- deriving (Show, Eq, Data, Typeable)
+  ||| More Pictures ----------------------------------
+  ||| A picture consisting of several others.
+  Pictures (List Picture)
+  -- deriving (Show, Eq, Data, Typeable)
 
 ||| Instances ------------------------------------------------------------------
 export

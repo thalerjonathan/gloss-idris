@@ -6,7 +6,11 @@ import Graphics.Gloss.Data.ViewState
 import Graphics.Gloss.Internals.Interface.Backend
 import Graphics.Gloss.Internals.Interface.Event
 
-viewState_motion : Backend GLFWState => IORef ViewState -> IORef GLFWState -> (Int,Int) -> IO () -- MotionCallback
+viewState_motion :  Backend GLFWState 
+                 => IORef ViewState 
+                 -> IORef GLFWState 
+                 -> (Int,Int) 
+                 -> IO () -- MotionCallback
 viewState_motion viewStateRef stateRef pos = do 
   viewState <- readIORef viewStateRef
   ev        <- motionEvent stateRef pos

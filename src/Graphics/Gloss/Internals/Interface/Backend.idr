@@ -26,7 +26,7 @@ mutual
     ||| Action that draws on the screen
     display       : IO ()
     ||| Action perforrmed when idling
-    idle          : IO ()
+    idleAction    : IO ()
     ||| The handle to the GLFW window
     winHdl        : GLFW.Window
 
@@ -38,12 +38,6 @@ mutual
           | Idle     (Backend GLFWState => IORef GLFWState -> IO ()) -- IdleCallback
           | Motion   (Backend GLFWState => IORef GLFWState -> (Int,Int) -> IO ())-- MotionCallback
           | Reshape  (Backend GLFWState => IORef GLFWState -> (Int,Int) -> IO ()) -- ReshapeCallback
-
-  ||| Check if this is an `Idle` callback.
-  export
-  isIdleCallback : Callback -> Bool
-  isIdleCallback (Idle _) = True
-  isIdleCallback _        = False
 
   -------------------------------------------------------------------------------
   -- This is Glosses view of mouse and keyboard events.
@@ -207,56 +201,6 @@ mutual
 
     ||| Function that puts the current thread to sleep for 'n' seconds.
     sleep                      : IORef a -> Double -> IO ()
-
-
-  -- The callbacks should work for all backends. We pass a reference to the
-  -- backend state so that the callbacks have access to the class dictionary and
-  -- can thus call the appropriate backend functions.
-
-  {-
-  ||| Display callback has no arguments.
-  DisplayCallback : Type
-  DisplayCallback = (Backend a => IORef a -> IO ())
-
-  type DisplayCallback
-          = forall a . Backend a => IORef a -> IO ()
-          -}
-    {-
-  ||| Arguments: KeyType, Key Up \/ Down, Ctrl \/ Alt \/ Shift pressed, latest mouse location.
-
-  KeyboardMouseCallback : Type
-  KeyboardMouseCallback = (Backend a => IORef a -> Key -> KeyState -> Modifiers -> (Int,Int) -> IO ())
-
-  type KeyboardMouseCallback 
-          = forall a . Backend a => IORef a -> Key -> KeyState -> Modifiers -> (Int,Int) -> IO ()
-  -}
-    {-
-  ||| Arguments: (PosX,PosY) in pixels.
-
-  MotionCallback : Type
-  MotionCallback = (Backend a => IORef a -> (Int,Int) -> IO ())
-
-  type MotionCallback
-          = forall a . Backend a => IORef a -> (Int,Int) -> IO ()
-  -}
-    {-
-  ||| No arguments.
-
-  IdleCallback : Type
-  IdleCallback = (Backend a => IORef a -> IO ())
-
-  type IdleCallback
-          = forall a . Backend a => IORef a -> IO ()
-  -}
-    {-
-  ||| Arguments: (Width,Height) in pixels.
-
-  ReshapeCallback : Type
-  ReshapeCallback = (Backend a => IORef a -> (Int,Int) -> IO ())
-
-  type ReshapeCallback
-          = forall a . Backend a => IORef a -> (Int,Int) -> IO ()
-  -}
 
 export
 Eq SpecialKeyData where
@@ -497,13 +441,13 @@ mutual
   glfwStateInit : GLFWState
   glfwStateInit
     = MkGLFWState
-        (MkModifiers Up Up Up)
-        (0, 0)
-        0
-        True
-        (pure ())
-        (pure ())
-        NullWindow
+        (MkModifiers Up Up Up)  -- modifiers
+        (0, 0)                  -- mousePosition
+        0                       -- mouseWheelPos
+        True                    -- dirtyScreen
+        (pure ())               -- display
+        (pure ())               -- idle
+        NullWindow              -- winHdl
 
   export
   defaultBackendState : GLFWState
@@ -613,25 +557,19 @@ mutual
     
     putStr  $ "* dumpGlfwState\n"
 
-
   -- Display Callback -----------------------------------------------------------
   callbackDisplay : Backend GLFWState
                   => IORef GLFWState 
                   -> List Callback
                   -> IO ()
   callbackDisplay stateRef callbacks = do
-      -- clear the display
-      -- GL.clear [GL.ColorBuffer, GL.DepthBuffer]
-      -- GL.color $ GL.Color4 0 0 0 (1 :: GL.GLfloat)
-
       GL.glClear GL_COLOR_BUFFER_BIT
       GL.glClear GL_DEPTH_BUFFER_BIT
       GL.glClearColor 0 0 0 1
 
       -- get the display callbacks from the chain
-      -- let funs  = [f stateRef | (Display f) <- callbacks]
-      -- sequence_ funs
       runDisplayClbks callbacks
+
     where
       runDisplayClbks : Backend GLFWState => List Callback -> IO ()
       runDisplayClbks [] = pure ()
@@ -672,7 +610,7 @@ mutual
                              -> IO ()
   installReshapeCallbackGLFW stateRef callbacks = do
       s <- readIORef stateRef
-      GLFW.setWindowSizeCallback (winHdl s) !windowSizeCallbackPtr -- (callbackReshape stateRef callbacks)
+      GLFW.setWindowSizeCallback (winHdl s) !windowSizeCallbackPtr 
     where
       callbackReshape :  List Callback
                       -> Int 
@@ -681,11 +619,6 @@ mutual
       callbackReshape [] _ _ = pure ()
       callbackReshape (Reshape f :: cs) sizeX sizeY  = f stateRef (sizeX, sizeY)
       callbackReshape _ _ _ = pure ()
-      {-
-        = sequence_
-        $ map (\f => f (sizeX, sizeY))
-          [f glfwState | Reshape f <- callbacks] -- TODO: this looks like its not gonna work in idris
-        -}
 
       windowSizeCallback : WindowSizeCallback
       windowSizeCallback win' w h = unsafePerformIO $ do 
@@ -761,10 +694,6 @@ mutual
           -- => when not
           when (not (modsSet || isCharKey key' && keystate))
             (runKeyMouseClbk stateRef key' keystate' mods pos callbacks)
-
-            --$ sequence_ 
-            --$ map  (\f => f key' keystate' mods pos)
-            --      [f stateRef | KeyMouse f <- callbacks] -- TODO: this looks like its not gonna work in idris
                   
         where
           isCharKey : Key -> Bool
@@ -787,11 +716,6 @@ mutual
           let keystate' = if keystate then Down else Up
 
           -- Call all the Gloss KeyMouse actions with the new state.
-          {-
-          sequence_ 
-            $ map  (\f => f key' keystate' mods pos) 
-                  [f stateRef | KeyMouse f <- callbacks] -- TODO: this looks like its not gonna work in idris
-                  -}
           runKeyMouseClbk stateRef key' keystate' mods pos callbacks
 
       -- GLFW calls on this when the user clicks or releases a mouse button.
@@ -805,11 +729,6 @@ mutual
 
         -- Call all the Gloss KeyMouse actions with the new state.
         runKeyMouseClbk stateRef key' keystate' mods pos callbacks
-        {-
-        sequence_ 
-          $ map  (\f => f key' keystate' mods pos)
-                [f stateRef | KeyMouse f <- callbacks] -- TODO: this looks like its not gonna work in idris
-                -}
 
       setMouseWheel :  Int
                     -> IO (Key, KeyState)
@@ -830,11 +749,6 @@ mutual
 
         -- Call all the Gloss KeyMouse actions with the new state.
         runKeyMouseClbk stateRef key keystate mods pos callbacks
-        {-
-        sequence_ 
-          $ map  (\f => f key keystate mods pos)
-                [f stateRef | KeyMouse f <- callbacks]
-                -}
 
       keyCallback : KeyCallback
       keyCallback win' key scancode action mods = unsafePerformIO $ do
@@ -899,36 +813,25 @@ mutual
                   -> Int
                   -> IO (Int, Int)
       setMousePos x y = do
-        putStrLn "setMousePos 1"
         let pos = (x,y)
-        putStrLn "setMousePos 2"
         -- TODO: crash occurs when evaluating this statement
         modifyIORef stateRef $ \s => record { mousePosition = pos } s
-        putStrLn "setMousePos 3"
         pure pos
 
       callbackMotion :  Int 
                     -> Int
                     -> IO ()
       callbackMotion x y = do
-          putStrLn "callbackMotion"
           pos <- setMousePos x y
-
           -- Call all the Gloss Motion actions with the new state.
-          putStrLn "runMotionClbks before"
           runMotionClbks pos callbacks
-          {-
-          sequence_ 
-            $ map  (\f => f pos)
-                  [f stateRef | Motion f <- callbacks] -- TODO: this looks like its not gonna work in idris
-                  -}
+
         where
           runMotionClbks : (Int, Int) 
                         -> List Callback
                         -> IO ()
           runMotionClbks _ [] = pure ()
           runMotionClbks pos (Motion f :: cs) = do
-            putStrLn "runMotionClbks Motion"
             f stateRef pos
             runMotionClbks pos cs
           runMotionClbks _ _ = pure ()
@@ -936,7 +839,6 @@ mutual
 
       mousePositionCallback : MousePositionCallback
       mousePositionCallback win' xpos ypos = unsafePerformIO $ do 
-        putStrLn "mousePositionCallback"
         callbackMotion (cast xpos) (cast ypos)
         pure ()
 
@@ -952,60 +854,36 @@ mutual
     f stateRef
     callbackIdle stateRef cs
   
-    -- = sequence_ $ [f stateRef | Idle f <- callbacks] -- TODO: this looks like its not gonna work in idris
-
   ||| Callback for when GLFW has finished its jobs and it's time for us to do
   |||   something for our application.
   installIdleCallbackGLFW :  IORef GLFWState 
                           -> List Callback 
                           -> IO ()
   installIdleCallbackGLFW stateRef callbacks 
-    = modifyIORef stateRef $ \s => record { idle = callbackIdle stateRef callbacks } s
+      = modifyIORef stateRef $ \s => record { idleAction = callbackIdle stateRef callbacks } s
 
   -- Main Loop ------------------------------------------------------------------
   -- TODO: need to implement some kind of exception handling here!
   runMainLoopGLFW : IORef GLFWState -> IO ()
-  runMainLoopGLFW stateRef = go -- = X.catch go exit
-    where
-      go : IO ()
-      go = do
-        putStrLn "1"
-        let win = winHdl !(readIORef stateRef)
-        windowIsOpen <- GLFW.windowIsOpen win
-        putStrLn "2"
-        when windowIsOpen 
-          $ do  
-            putStrLn "3"
-            GLFW.pollEvents
-            putStrLn "4"
-            s <- readIORef stateRef
+  runMainLoopGLFW stateRef = do
+    let win = winHdl !(readIORef stateRef)
+    windowIsOpen <- GLFW.windowIsOpen win
+    when windowIsOpen 
+      $ do  
+        GLFW.pollEvents
+        s <- readIORef stateRef
 
-            let ds = dirtyScreen s
-            putStrLn $ "dirtyScreen = " ++ show ds
-            dirty <- map dirtyScreen $ readIORef stateRef
-            putStrLn "5"
+        when (dirtyScreen s)
+          $ do
+            display s
+            GLFW.swapBuffers win
 
-            when dirty
-              $ do
-                putStrLn "5a"
-                display s
-                putStrLn "5b"
-                GLFW.swapBuffers win
-                putStrLn "5c"
-
-            putStrLn "6"
-            modifyIORef stateRef $ \s => record { dirtyScreen = False } s
-            putStrLn "7"
-
-            (readIORef stateRef) >>= (\s => idle s)
-            putStrLn "8"
-            GLFW.sleep 0.001
-            putStrLn "9"
-            runMainLoopGLFW stateRef
-
+        modifyIORef stateRef $ \s' => record { dirtyScreen = False } s'
+        (readIORef' stateRef) >>= (\s' => idleAction s')
+        GLFW.sleep 0.001
+        runMainLoopGLFW stateRef
 
   -- Redisplay ------------------------------------------------------------------
   postRedisplayGLFW : IORef GLFWState -> IO ()
   postRedisplayGLFW stateRef = do
-    putStrLn "postRedisplayGLFW"
     modifyIORef stateRef $ \s => record { dirtyScreen = True } s

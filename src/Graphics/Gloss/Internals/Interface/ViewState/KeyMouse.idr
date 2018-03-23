@@ -6,7 +6,14 @@ import Graphics.Gloss.Data.ViewState
 import Graphics.Gloss.Internals.Interface.Backend
 import Graphics.Gloss.Internals.Interface.Event
 
-viewState_keyMouse : Backend GLFWState => IORef ViewState -> IORef GLFWState -> Key -> KeyState -> Modifiers -> (Int,Int) -> IO () -- KeyboardMouseCallback
+viewState_keyMouse :  Backend GLFWState 
+                   => IORef ViewState 
+                   -> IORef GLFWState 
+                   -> Key 
+                   -> KeyState 
+                   -> Modifiers 
+                   -> (Int,Int) 
+                   -> IO () -- KeyboardMouseCallback
 viewState_keyMouse viewStateRef stateRef key keyState keyMods pos = do
   viewState <- readIORef viewStateRef
   ev        <- keyMouseEvent stateRef key keyState keyMods pos

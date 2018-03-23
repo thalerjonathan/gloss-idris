@@ -73,7 +73,7 @@ createWindow
 
   when debug
     $ do   putStr  $ "* entering mainloop..\n"
-
+    
   -- Start the main backend loop
   runMainLoop backendStateRef
 

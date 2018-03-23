@@ -8,7 +8,6 @@ import        Graphics.Gloss.Data.Controller
 import        Graphics.Gloss.Internals.Interface.Animate
 import        Graphics.Gloss.Internals.Interface.Backend
 
-
 ||| Open a new window and display the given animation.
 |||
 |||   Once the window is open you can use the same commands as with `display`.
@@ -20,9 +19,10 @@ animate :  Display              -- ^ Display mode.
                                 --      It is passed the time in seconds since the program started.
         -> IO ()
 animate display backColor frameFun
-        = animateWithBackendIO 
-                defaultBackendState
-                True            -- pannable
-                display backColor
-                (pure . frameFun) 
-                (const (pure ()))
+  = animateWithBackendIO 
+      defaultBackendState
+      True            -- pannable
+      display 
+      backColor
+      (pure . frameFun) 
+      (const (pure ()))

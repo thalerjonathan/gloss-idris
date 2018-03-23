@@ -47,25 +47,23 @@ Eq Command where
   (==) CBumpClockwise CBumpClockwise    = True
   (==) CBumpCClockwise CBumpCClockwise  = True
   (==) _ _ = False
+  
+toEnum : Command -> Nat
+toEnum CRestore        = 0
+toEnum CTranslate      = 1
+toEnum CRotate         = 2
+toEnum CScale          = 3
+toEnum CBumpZoomOut    = 4
+toEnum CBumpZoomIn     = 5
+toEnum CBumpLeft       = 6
+toEnum CBumpRight      = 7
+toEnum CBumpUp         = 8
+toEnum CBumpDown       = 9
+toEnum CBumpClockwise  = 10
+toEnum CBumpCClockwise = 11
 
--- very primitive implementation of ordering
--- respect equality but don't care about ordering, its always LT
--- because creating all combinations is too much work
--- TODO: does this really work? 
 Ord Command where
-  compare CRestore CRestore                = EQ
-  compare CTranslate CTranslate            = EQ
-  compare CRotate CRotate                  = EQ
-  compare CScale CScale                    = EQ
-  compare CBumpZoomOut CBumpZoomOut        = EQ
-  compare CBumpZoomIn CBumpZoomIn          = EQ
-  compare CBumpLeft CBumpLeft              = EQ
-  compare CBumpRight CBumpRight            = EQ
-  compare CBumpUp CBumpUp                  = EQ
-  compare CBumpDown CBumpDown              = EQ
-  compare CBumpClockwise CBumpClockwise    = EQ
-  compare CBumpCClockwise CBumpCClockwise  = EQ
-  compare _ _ = LT
+  compare c1 c2 = compare (toEnum c1) (toEnum c2)
 
 public export
 CommandConfig : Type
@@ -223,7 +221,7 @@ motionTranslate (Just (markX, markY)) (posX, posY) viewState
     o = rotateV (degToRad r) offset
     port'   = record { viewPortTranslate = trans - o } port
 
--- | Apply a rotation to the `ViewState`.
+||| Apply a rotation to the `ViewState`.
 motionRotate 
          : Maybe (Double, Double)         -- Location of first mark.
         -> (Double, Double)               -- Current position.
@@ -245,7 +243,7 @@ motionRotate (Just (markX, _markY)) (posX, posY) viewState
 
     port' = record { viewPortRotate = rotate - rotateFactor * (posX - markX) } port
 
--- | Apply a scale to the `ViewState`.
+||| Apply a scale to the `ViewState`.
 motionScale
          : Maybe (Double, Double)         -- Location of first mark.
         -> (Double, Double)               -- Current position.
@@ -329,14 +327,14 @@ export
 viewStateInitWithConfig : CommandConfig -> ViewState
 viewStateInitWithConfig commandConfig 
   = MkViewState 
-      (SortedMap.fromList commandConfig)
-      0.85 
-      0.6
-      0.01
-      Nothing
-      Nothing
-      Nothing
-      viewPortInit
+      (SortedMap.fromList commandConfig)  -- viewStateCommands
+      0.85                                -- viewStateScaleStep
+      0.6                                 -- viewStateRotateFactor
+      0.01                                -- viewStateScaleFactor
+      Nothing                             -- viewStateTranslateMark
+      Nothing                             -- viewStateRotateMark
+      Nothing                             -- viewStateScaleMark
+      viewPortInit                        -- viewStateViewPort
 
 ||| The initial view state.
 export

@@ -115,8 +115,8 @@ installTexture width height bitmapData cacheMe = do
     GL_TEXTURE_2D     -- target
     0                 -- level
     GL_RGBA           -- TODO internal format, what if pixelformat is ABGR??
-    (gsizei width)    -- width
-    (gsizei height)   -- height
+    width    -- width
+    height   -- height
     0                 -- border, must be 0
     GL_RGBA           -- TODO: not sure if this is correct glFormat          -- format of the pixel data
     GL_UNSIGNED_BYTE  -- data type of the pixel data
@@ -193,8 +193,8 @@ polyCoords TopToBottom = [(0,1), (1,1), (1,0), (0,0)]
 
 renderTextureVertex : ((Double, Double), (Double, Double)) -> IO ()
 renderTextureVertex ((tx, ty), (px, py)) = do
-  GL.glTexCoord2f (gf tx) (gf ty)
-  GL.glVertex2f   (gf px) (gf py)
+  GL.glTexCoord2f tx ty
+  GL.glVertex2f   px py
 
 drawPicture : State -> Double -> Picture -> IO ()         
 drawPicture state circScale picture =
@@ -253,11 +253,11 @@ drawPicture state circScale picture =
               oldColor <- GL.getFloat4 GL_CURRENT_COLOR
               let RGBA r g b a  = col
               --GL.currentColor  $= GL.Color4 (gf r) (gf g) (gf b) (gf a)
-              GL.glColor4f (gf r) (gf g) (gf b) (gf a)
+              GL.glColor4f r g b a
               drawPicture state circScale p
               --GL.currentColor  $= oldColor   
               let (or, og, ob, oa) = oldColor  
-              GL.glColor4f (gf or) (gf og) (gf ob) (gf oa) 
+              GL.glColor4f or og ob oa 
             else drawPicture state circScale p
 
       -- Translation --------------------------
@@ -352,7 +352,7 @@ drawPicture state circScale picture =
 
         -- Restore color
         --GL.currentColor $= oldColor
-        GL.glColor4f (gf or) (gf og) (gf ob) (gf oa) 
+        GL.glColor4f or og ob oa 
 
         -- Disable texturing
         --GL.texture GL.Texture2D $= GL.Disabled

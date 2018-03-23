@@ -8,7 +8,10 @@ import Graphics.Rendering.OpenGL.Internal.Types
 import Graphics.Gloss.Internals.Interface.Backend
 
 export
-viewState_reshape : Backend GLFWState => IORef GLFWState -> (Int,Int) -> IO () -- ReshapeCallback
+viewState_reshape :  Backend GLFWState 
+                  => IORef GLFWState 
+                  -> (Int,Int) 
+                  -> IO () -- ReshapeCallback
 viewState_reshape stateRef (width, height) = do
   -- Setup the viewport
   --      This controls what part of the window openGL renders to.
@@ -16,7 +19,6 @@ viewState_reshape stateRef (width, height) = do
   --
   --GL.viewport     $= ( GL.Position 0 0
   --                    , GL.Size (fromIntegral width) (fromIntegral height))
-  -- glViewport : GLint -> GLint -> GLsizei -> GLsizei -> IO ()
   glViewport 0 0 width height
 
   postRedisplay stateRef

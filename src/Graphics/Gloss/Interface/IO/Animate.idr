@@ -1,13 +1,5 @@
 ||| Animate a picture in a window.
 module Graphics.Gloss.Interface.IO.Animate
-{-
-        ( module Graphics.Gloss.Data.Display
-        , module Graphics.Gloss.Data.Picture
-        , module Graphics.Gloss.Data.Color
-        , animateIO
-        , animateFixedIO
-        , Controller (..))
--}
 
 import public Graphics.Gloss.Data.Display
 import        Graphics.Gloss.Data.Controller
@@ -29,12 +21,12 @@ animateIO : Display                -- ^ Display mode.
           -> IO ()
 animateIO display backColor
         frameFunIO eatControllerIO
-        = animateWithBackendIO 
-                defaultBackendState 
-                True              -- pannable
-                display backColor
-                frameFunIO
-                eatControllerIO
+  = animateWithBackendIO 
+      defaultBackendState 
+      True              -- pannable
+      display backColor
+      frameFunIO
+      eatControllerIO
 
 ||| Like `animateIO` but don't allow the display to be panned around.
 |||
@@ -47,9 +39,9 @@ animateFixedIO : Display                -- ^ Display mode.
                -> IO ()
 animateFixedIO display backColor
         frameFunIO eatControllerIO
-        = animateWithBackendIO 
-                defaultBackendState 
-                False
-                display backColor
-                frameFunIO
-                eatControllerIO
+  = animateWithBackendIO 
+        defaultBackendState 
+        False
+        display backColor
+        frameFunIO
+        eatControllerIO

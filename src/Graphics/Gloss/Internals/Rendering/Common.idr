@@ -5,27 +5,6 @@ import Graphics.Rendering.OpenGL.Internal.Types
 
 import Graphics.Gloss.Internals.Data.Color
 
-||| The OpenGL library doesn't seem to provide a nice way convert
-|||      a Float to a GLfloat, even though they're the same thing
-|||      under the covers.  
-|||
-|||  Using realToFrac is too slow, as it doesn't get fused in at
-|||      least GHC 6.12.1
-|||
-export
-gf : Double -> GLfloat
---gf x = unsafeCoerce x
-gf = id
-{-# INLINE gf #-}
-
-
-||| Used for similar reasons to above
-export
-gsizei : Int -> GLsizei
--- gsizei x = unsafeCoerce x
-gsizei = id
-{-# INLINE gsizei #-}
-
 ||| used for clearing color with the Color type
 |||  because need to extract the quadruple
 export

@@ -17,39 +17,28 @@ data Color =
 Num Color where
  (+) (RGBA r1 g1 b1 _) (RGBA r2 g2 b2 _)
         = RGBA (r1 + r2) (g1 + g2) (b1 + b2) 1
- {-# INLINE (+) #-}
 
  (*) (RGBA r1 g1 b1 _) (RGBA r2 g2 b2 _)
         = RGBA (r1 * r2) (g1 * g2) (b1 * b2) 1
- {-# INLINE (*) #-}
 
-{-
- signum (RGBA r1 g1 b1 _)
-        = RGBA (signum r1) (signum g1) (signum b1) 1 -}
- {-# INLINE signum #-}
-        
  fromInteger i
   = let f = fromInteger i
     in  RGBA f f f 1
- {-# INLINE fromInteger #-}
 
 Abs Color where
  abs (RGBA r1 g1 b1 _)
         = RGBA (abs r1) (abs g1) (abs b1) 1
- {-# INLINE abs #-}
 
 Neg Color where
   -- added because idris Neg interface requires the implementation of negate
   negate (RGBA r g b a) = (RGBA (-r) (-g) (-b) (-a))
   (-) (RGBA r1 g1 b1 _) (RGBA r2 g2 b2 _)
         = RGBA (r1 - r2) (g1 - g2) (b1 - b2) 1
-  {-# INLINE (-) #-}
 
 ||| Take the RGBA components of a color.
 export
 rgbaOfColor : Color -> (Double, Double, Double, Double)
 rgbaOfColor (RGBA r g b a) = (r, g, b, a)
-{-# INLINE rgbaOfColor #-}
 
 ||| Clamp components of a raw color into the required range.
 export
@@ -71,8 +60,6 @@ makeColor :  (r : Double)
           -> Color
 makeColor r g b a 
   = clampColor $ RGBA r g b a
-{-# INLINE makeColor #-}
-
 
 ||| Make a custom color. All components are clamped to the range [0..255].
 export
@@ -82,8 +69,6 @@ makeColorI r g b a
                       (cast g / 255)
                       (cast b / 255)
                       (cast a / 255)
-{-# INLINE makeColorI #-}
-
 
 ||| Make a custom color. 
 |||
@@ -99,8 +84,6 @@ makeColorI r g b a
 export
 makeRawColor : Double -> Double -> Double -> Double -> Color
 makeRawColor r g b a = RGBA r g b a
-{-# INLINE makeRawColor #-}
-
 
 ||| Make a custom color, taking pre-clamped components.
 export
@@ -109,4 +92,3 @@ makeRawColorI r g b a = RGBA (cast r / 255)
                              (cast g / 255)
                              (cast b / 255)
                              (cast a / 255)
-{-# INLINE makeRawColorI #-}

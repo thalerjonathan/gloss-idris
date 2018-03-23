@@ -75,7 +75,7 @@ animateWithBackendIO
   let callbacks =  [ 
       Display      (animateBegin animateSR)
     , Display      (displayFun animateSR viewSR renderSR backColor frameOp)
-    , Display      (animateEnd   animateSR)
+    , Display      (animateEnd animateSR)
     , Idle         (\s => postRedisplay s)
     , callback_exit backend 
     , callback_viewState_motion viewSR

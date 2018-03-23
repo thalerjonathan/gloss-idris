@@ -17,7 +17,7 @@ record Texture where
   ||| Height of the image, in pixels.
   texHeight : Int
   ||| Pointer to the Raw texture data.
-  texData : Ptr -- TODO: ForeignPtr Word8
+  texData : Ptr
   ||| The OpenGL texture object.
   texObject : GLuint
   ||| Whether we want to leave this in OpenGL texture memory between frames.
@@ -37,8 +37,7 @@ record State where
   ||| Whether to use line smoothing
   stateLineSmooth : Bool 
   ||| Cache of Textures that we've sent to OpenGL.
-  stateTextures : IORef (List Texture) -- compiler refuses IORef [Texture], why?
-
+  stateTextures : IORef (List Texture)
 
 ||| A mutable render state holds references to the textures currently loaded
 |||   into the OpenGL context. To ensure that textures are cached in GPU memory,
@@ -47,4 +46,9 @@ export
 initState : IO State
 initState = do
   textures <- newIORef []
-  pure $ MkState True False True False textures
+  pure $ MkState 
+          True      -- stateColor
+          False     -- stateWireframe
+          True      -- stateBlendAlpha
+          False     -- stateLineSmooth
+          textures  -- stateTextures

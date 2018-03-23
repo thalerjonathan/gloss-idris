@@ -1,13 +1,6 @@
 ||| Implements functions to dump portions of the OpenGL state to stdout.
 |||      Used for debugging.
 module Graphics.Gloss.Internals.Interface.Debug
-{-
-        ( dumpFramebufferState
-        , dumpFragmentState )
-where
-import qualified Graphics.Rendering.OpenGL.GL   as GL
-import Graphics.Rendering.OpenGL                (get)
--}
 
 ||| Dump internal state of the OpenGL framebuffer
 export
