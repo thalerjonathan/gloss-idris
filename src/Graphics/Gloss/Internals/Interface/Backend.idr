@@ -576,7 +576,7 @@ mutual
       runDisplayClbks (Display f :: cs) = do
         f stateRef
         runDisplayClbks cs
-      runDisplayClbks _ = pure ()
+      runDisplayClbks (_ :: cs) = runDisplayClbks cs
 
   ||| Callback for when GLFW needs us to redraw the contents of the window.
   installDisplayCallbackGLFW : Backend GLFWState
@@ -661,7 +661,8 @@ mutual
   runKeyMouseClbk stateRef key keystate mods pos (KeyMouse f :: cs) = do
     f stateRef key keystate mods pos
     runKeyMouseClbk stateRef key keystate mods pos cs
-  runKeyMouseClbk _ _ _ _ _ _ = pure ()
+  runKeyMouseClbk stateRef key keystate mods pos (_ :: cs) 
+    = runKeyMouseClbk stateRef key keystate mods pos cs
 
   ||| Callbacks for when the user presses a key or moves / clicks the mouse.
   |||   This is a bit verbose because we have to do impedence matching between
@@ -769,7 +770,6 @@ mutual
       charCallback : CharCallback
       charCallback win' c = unsafePerformIO $ do 
         callbackChar c True -- TODO: is true correct here?
-        pure ()
 
       charCallbackPtr : IO Ptr
       charCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr CharCallback -> IO Ptr) (MkCFnPtr charCallback)
@@ -788,14 +788,12 @@ mutual
           mouseButtonCallbackAux (Just glfwMb) (Just Release) = callbackMouseButton glfwMb False
           mouseButtonCallbackAux _ _ = pure () -- ignore invalid key (which won't happen, but need to catch it this way)
 
-
       mouseButtonCallbackPtr : IO Ptr
       mouseButtonCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr MouseButtonCallback -> IO Ptr) (MkCFnPtr mouseButtonCallback)
 
       mouseWheelCallback : MouseWheelCallback
       mouseWheelCallback win' xoff yoff = unsafePerformIO $ do 
         callbackMouseWheel (cast yoff)
-        pure ()
 
       mouseWheelCallbackPtr : IO Ptr
       mouseWheelCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr MouseButtonCallback -> IO Ptr) (MkCFnPtr mouseButtonCallback)
@@ -834,13 +832,11 @@ mutual
           runMotionClbks pos (Motion f :: cs) = do
             f stateRef pos
             runMotionClbks pos cs
-          runMotionClbks _ _ = pure ()
-
+          runMotionClbks pos (_ :: cs) = runMotionClbks pos cs
 
       mousePositionCallback : MousePositionCallback
       mousePositionCallback win' xpos ypos = unsafePerformIO $ do 
         callbackMotion (cast xpos) (cast ypos)
-        pure ()
 
       mousePositionCallbackPtr : IO Ptr
       mousePositionCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr MousePositionCallback -> IO Ptr) (MkCFnPtr mousePositionCallback)
@@ -853,7 +849,9 @@ mutual
   callbackIdle stateRef (Idle f :: cs) = do
     f stateRef
     callbackIdle stateRef cs
-  
+  callbackIdle stateRef (_ :: cs) 
+    = callbackIdle stateRef cs
+
   ||| Callback for when GLFW has finished its jobs and it's time for us to do
   |||   something for our application.
   installIdleCallbackGLFW :  IORef GLFWState 
