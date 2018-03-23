@@ -1,0 +1,8 @@
+package graph
+
+opts = "-p gloss-idris -p glfw-idris-st -p effects -p contrib" 
+
+makefile = MakefileConfig
+
+executable = graph
+main = Main
