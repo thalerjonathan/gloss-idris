@@ -1,0 +1,8 @@
+package machina
+
+opts = "-p gloss-idris -p glfw-idris-st" 
+
+makefile = MakefileConfig
+
+executable = machina
+main = Main
