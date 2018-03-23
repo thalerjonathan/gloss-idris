@@ -1,0 +1,8 @@
+package gravity
+
+opts = "-p gloss-idris -p glfw-idris-st" 
+
+makefile = MakefileConfig
+
+executable = gravity
+main = Main
