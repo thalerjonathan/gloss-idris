@@ -494,12 +494,14 @@ mutual
     -- of buffer swaps per vertical refresh to 1.
     GLFW.setSwapInterval 1
 
-  -- TODO: really no idea where (sizeX, sizeY) comes from at this point, they don't show up in the type
-  openWindowGLFW stateRef (FullScreen) = do --(sizeX, sizeY)) = do
+  openWindowGLFW stateRef (FullScreen) = do
+    mon <- GLFW.getPrimaryMonitor
+    vmode <- GLFW.getVideoMode mon
+
     let disp = record 
-      { --displayOptions_width        = sizeX
-      --, displayOptions_height       = sizeY
-      displayOptions_displayMode  = GLFW.FullscreenMode } GLFW.defaultDisplayOptions
+      { displayOptions_width        = width vmode
+      , displayOptions_height       = height vmode
+      , displayOptions_displayMode  = GLFW.FullscreenMode } GLFW.defaultDisplayOptions
 
     win <- GLFW.createWindow "" disp
     GLFW.makeContextCurrent win
