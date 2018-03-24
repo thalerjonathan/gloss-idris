@@ -168,12 +168,12 @@ freeTexture tex =
     then pure ()
     else GL.glDeleteTextures 1 [texObject tex] --GL.deleteObjectNames [texObject tex]
 
-polyCoords : RowOrder -> List (Double, Double)
-polyCoords BottomToTop = [(0,0), (1,0), (1,1), (0,1)]
-polyCoords TopToBottom = [(0,1), (1,1), (1,0), (0,0)]
+textureCoords : RowOrder -> List (Double, Double)
+textureCoords BottomToTop = [(0,0), (1,0), (1,1), (0,1)]
+textureCoords TopToBottom = [(0,1), (1,1), (1,0), (0,0)]
 
 renderTextureVertex : ((Double, Double), (Double, Double)) -> IO ()
-renderTextureVertex ((tx, ty), (px, py)) = do
+renderTextureVertex ((px, py), (tx, ty)) = do
   GL.glTexCoord2f tx ty
   GL.glVertex2f   px py
 
@@ -325,8 +325,8 @@ drawPicture state circScale picture =
 
         -- Draw textured polygon
         --GL.renderPrimitive GL.Polygon
-        let polyCoords = polyCoords (rowOrder (bitmapFormat imgData))
-        let poly = List.zip (bitmapPathd (cast width) (cast height)) polyCoords
+        let tc = textureCoords (rowOrder (bitmapFormat imgData))
+        let poly = List.zip (bitmapPathd (cast width) (cast height)) tc
         GL.glBegin GL_POLYGON
         traverse_ renderTextureVertex poly
         GL.glEnd

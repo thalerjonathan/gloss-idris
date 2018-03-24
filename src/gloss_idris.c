@@ -151,6 +151,10 @@ png_load(const char * file_name)
   // read the png into image_data through row_pointers
   png_read_image(png_ptr, row_pointers);
 
+  png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
+  free(row_pointers);
+  fclose(fp);
+
   struct PNGLoad* pngLoad = (struct PNGLoad*) malloc (sizeof PNGLoad);
   pngLoad->pngHeight = temp_height;
   pngLoad->pngWidth = temp_width;
