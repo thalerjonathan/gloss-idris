@@ -10,6 +10,7 @@ import Graphics.Gloss.Internals.Data.Picture
 import Graphics.Gloss.Internals.Rendering.Bitmap
 import Graphics.Gloss.Internals.Rendering.Circle
 import Graphics.Gloss.Internals.Rendering.Common 
+import Graphics.Gloss.Internals.Rendering.Font
 import Graphics.Gloss.Internals.Rendering.State
 
 -- Errors ---------------------------------------------------------------------
@@ -223,7 +224,7 @@ drawPicture state circScale picture =
       Text str 
         => do
           GL.glDisable GL_BLEND
-          -- TODO: implement text-rendering preservingMatrix $ GLUT.renderString GLUT.Roman str
+          preservingMatrix $ renderString str --GLUT.renderString GLUT.Roman str
           GL.glEnable GL_BLEND
 
       -- colors with float components.

@@ -9,6 +9,7 @@ import        Graphics.Rendering.OpenGL.Internal.Types
 import        Graphics.UI.GLFW as GLFW
 
 import public Graphics.Gloss.Data.Display
+import        Graphics.Gloss.Internals.Rendering.Font
 
 mutual
   ||| State of the GLFW backend library.
@@ -487,6 +488,7 @@ mutual
     modifyIORef stateRef (\s => record {winHdl = win } s)
     
     GLEW.glewInit -- don't forget to initialize glew AFTER window creation because OpenGL context exists only then
+    initFontRendering
 
     uncurry (GLFW.setWindowPosition win) pos
     

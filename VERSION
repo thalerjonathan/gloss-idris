@@ -1,1 +1,8 @@
+Current: 0.2
+
+History
+0.1 -> 0.2
+added text-rendering using GLUT
+
 0.1
+Port missing text-rendering, BMP support (PNG instead), and crashes due to a bug in Idris (probably) which does not allow modifyIORef in c callbacks

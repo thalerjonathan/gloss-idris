@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <idris_rts.h>
 #include <png.h>
+#include <GL/glut.h>
 
 #include "gloss_idris.h"
 
@@ -162,4 +163,26 @@ png_load(const char * file_name)
   pngLoad->pngRawData = image_data;
 
   return pngLoad;
+}
+
+void 
+initFontRendering()
+{
+    // just fake some arguments
+    char* fakeArgs [1];
+    int fakeArgsc = 1;
+    fakeArgs[0] = strdup ("gloss-idris");
+
+    glutInit(&fakeArgsc, fakeArgs);
+}
+
+void
+renderString(const char* str)
+{
+    unsigned int n = strlen(str);
+
+    for (unsigned int i = 0; i < n; ++i)
+    {
+        glutStrokeCharacter(GLUT_STROKE_ROMAN, str[i]);
+    }
 }

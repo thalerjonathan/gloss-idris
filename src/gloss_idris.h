@@ -12,4 +12,7 @@ struct PNGLoad {
 
 struct PNGLoad* png_load(const char * file_name);
 
+void initFontRendering();
+void renderString(const char* str);
+
 #endif // __GLOSS_IDRIS_H
