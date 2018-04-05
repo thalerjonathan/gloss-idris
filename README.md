@@ -23,7 +23,7 @@ After solving issue #8 and adding BMP support the version will be set to 1.0 as 
 
 ### Building the library
 1. Assuming you have installed Idris and it is on your path.
-2. Make sure libpng, glfw3 and glew are installed on your system and can be found by pkg-config. On Linux use the package manager of your system, on Mac OS X use brew install.
+2. Make sure libpng, glfw3, glew and freeglut are installed on your system and can be found by pkg-config. On Linux use the package manager of your system, on Mac OS X use brew install.
 3. Download / clone glfw-idris-st from https://github.com/thalerjonathan/glfw-idris-st and install it.
 4. Download / clone gl-idris-b from https://github.com/thalerjonathan/gl-idris-b and install it.
 5. Download / clone gloss-idris
