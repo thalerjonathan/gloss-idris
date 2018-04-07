@@ -7,7 +7,7 @@ A port of the gloss library from Haskell to Idris, based on version 1.11.1.1. Wi
 - The original Haskell gloss library itself is split into gloss and gloss-rendering. I integrated both into this single library because I saw no point in splitting it for Idris. Also because of Idris' lack of a proper package management system like cabal, having too many dependencies on 3rd party libraries in a project can become quite annoying. If in the future there is a real need for separating out the gloss-rendering functionality, this can be done quite easily. Also the original Haskell gloss library has a large number of examples which are distributed in the gloss-examples library. I integrated this library into this as well for the same reasons. There exists two additional packages in Haskells gloss universe: gloss-raster which supports parallel rendering of raster images (e.g. Raytracing) and gloss-algorithms which provide data structures and algorithms for working with 2D graphics. I plan on porting them (and their respective examples which are located in the examples folder) in the future.
 
 ## Library Version: 0.2
-After solving issue #8 and adding BMP support the version will be set to 1.0 as this will then be a proper port. See VERSION.
+After solving issue #8 and adding BMP support the version will be set to 1.0 as this will then be a proper port. See ChangeLog.md.
 
 ### Idris version: 1.2
 
