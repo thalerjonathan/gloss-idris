@@ -2,6 +2,7 @@
 #include <idris_rts.h>
 #include <png.h>
 #include <GL/glut.h>
+#include <string.h>
 
 #include "gloss_idris.h"
 
