@@ -3,8 +3,29 @@
 #include <png.h>
 #include <GL/glut.h>
 #include <string.h>
+#include <GLFW/glfw3.h>
 
 #include "gloss_idris.h"
+
+static MousePosClbk mousePosClbk = NULL;
+static void* mousePosClbkStateRef = NULL;
+
+// typedef void(* GLFWcursorposfun) (GLFWwindow *, double, double);
+
+void
+clbkGlfwMousePos(GLFWwindow* w, double x, double y)
+{
+    mousePosClbk(w, x, y, mousePosClbkStateRef);
+}
+
+void
+installMousePosClbk(void* win, MousePosClbk clbk, void* stateRef)
+{
+    mousePosClbkStateRef = stateRef;
+    mousePosClbk = clbk;
+
+    glfwSetCursorPosCallback(win, clbkGlfwMousePos);
+}
 
 struct PNGLoad*
 png_load(const char * file_name)

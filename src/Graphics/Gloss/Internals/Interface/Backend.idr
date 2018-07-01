@@ -807,43 +807,54 @@ mutual
   installMotionCallbackGLFW :  IORef GLFWState 
                             -> List Callback
                             -> IO ()
-  installMotionCallbackGLFW stateRef callbacks = do
-      s <- readIORef stateRef
-      GLFW.setMousePositionCallback (winHdl s) !mousePositionCallbackPtr -- (callbackMotion stateRef callbacks)
+  installMotionCallbackGLFW stateRef0 callbacks = do
+      putStrLn "installing motion callback"
+      s <- readIORef stateRef0
+      --GLFW.setMousePositionCallback (winHdl s) !mousePositionCallbackPtr -- (callbackMotion stateRef callbacks)
+      foreign FFI_C "installMousePosClbk" (Ptr -> Ptr -> Raw (IORef GLFWState) -> IO ()) (winHdl s) !mousePositionCallbackPtr (MkRaw stateRef0) 
+      putStrLn "installing motion callback finished"
     where
       setMousePos :  Int 
                   -> Int
+                  -> IORef GLFWState
                   -> IO (Int, Int)
-      setMousePos x y = do
+      setMousePos x y stateRef' = do
+        putStrLn "setMousePos before"
         let pos = (x,y)
         -- TODO: crash occurs when evaluating this statement
-        modifyIORef stateRef $ \s => record { mousePosition = pos } s
+        modifyIORef stateRef' $ \s => record { mousePosition = pos } s
+        putStrLn "setMousePos after"
         pure pos
 
-      callbackMotion :  Int 
+      callbackMotion : Int 
                     -> Int
+                    -> IORef GLFWState
                     -> IO ()
-      callbackMotion x y = do
-          pos <- setMousePos x y
+      callbackMotion x y stateRef' = do
+          pos <- setMousePos x y stateRef'
           -- Call all the Gloss Motion actions with the new state.
-          runMotionClbks pos callbacks
+          runMotionClbks pos callbacks stateRef'
 
         where
           runMotionClbks : (Int, Int) 
                         -> List Callback
+                        -> IORef GLFWState
                         -> IO ()
-          runMotionClbks _ [] = pure ()
-          runMotionClbks pos (Motion f :: cs) = do
-            f stateRef pos
-            runMotionClbks pos cs
-          runMotionClbks pos (_ :: cs) = runMotionClbks pos cs
+          runMotionClbks _ [] _ = pure ()
+          runMotionClbks pos (Motion f :: cs) stateRef' = do
+            f stateRef' pos
+            runMotionClbks pos cs stateRef'
+          runMotionClbks pos (_ :: cs) stateRef' = runMotionClbks pos cs stateRef'
 
-      mousePositionCallback : MousePositionCallback
-      mousePositionCallback win' xpos ypos = unsafePerformIO $ do 
-        callbackMotion (cast xpos) (cast ypos)
+      CustomMousePositionCallback : Type
+      CustomMousePositionCallback = Window -> Double -> Double -> Raw (IORef GLFWState) -> ()
+
+      mousePositionCallback : CustomMousePositionCallback
+      mousePositionCallback win' xpos ypos (MkRaw stateRef') = unsafePerformIO $ do 
+        callbackMotion (cast xpos) (cast ypos) stateRef'
 
       mousePositionCallbackPtr : IO Ptr
-      mousePositionCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr MousePositionCallback -> IO Ptr) (MkCFnPtr mousePositionCallback)
+      mousePositionCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr CustomMousePositionCallback -> IO Ptr) (MkCFnPtr mousePositionCallback)
 
   -- Idle Callback --------------------------------------------------------------
   callbackIdle :  IORef GLFWState 

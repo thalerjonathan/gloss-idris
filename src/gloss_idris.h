@@ -3,6 +3,8 @@
 
 #include <idris_rts.h>
 
+typedef void (*MousePosClbk) (void*, double, double, void*);
+
 struct PNGLoad {
   int pngWidth;
   int pngHeight;
@@ -14,5 +16,7 @@ struct PNGLoad* png_load(const char * file_name);
 
 void initFontRendering();
 void renderString(const char* str);
+
+void installMousePosClbk(void* win, MousePosClbk clbk, void* stateRef);
 
 #endif // __GLOSS_IDRIS_H
