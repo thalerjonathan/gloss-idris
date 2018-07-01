@@ -15,6 +15,8 @@ static void* mousePosClbkStateRef = NULL;
 void
 clbkGlfwMousePos(GLFWwindow* w, double x, double y)
 {
+    printf ("clbkGlfwMousePos: %f, %f %p \n", x, y, mousePosClbkStateRef);
+
     mousePosClbk(w, x, y, mousePosClbkStateRef);
 }
 

@@ -803,6 +803,50 @@ mutual
       mouseWheelCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr MouseButtonCallback -> IO Ptr) (MkCFnPtr mouseButtonCallback)
 
   -- Motion Callback ------------------------------------------------------------
+  setMousePos :  Int 
+                -> Int
+                -> IORef GLFWState
+                -> IO (Int, Int)
+  setMousePos x y stateRef' = do
+    putStrLn "setMousePos before"
+    let pos = (x,y)
+    -- TODO: crash occurs when evaluating this statement
+    modifyIORef stateRef' $ \s => record { mousePosition = pos } s
+    putStrLn "setMousePos after"
+    pure pos
+
+  callbackMotion : Int 
+                -> Int
+                -> IORef GLFWState
+                -> IO ()
+  callbackMotion x y stateRef' = do
+      pos <- setMousePos x y stateRef'
+      -- Call all the Gloss Motion actions with the new state.
+      --runMotionClbks pos callbacks stateRef'
+      pure ()
+      
+    where
+      runMotionClbks : (Int, Int) 
+                    -> List Callback
+                    -> IORef GLFWState
+                    -> IO ()
+      runMotionClbks _ [] _ = pure ()
+      runMotionClbks pos (Motion f :: cs) stateRef' = do
+        f stateRef' pos
+        runMotionClbks pos cs stateRef'
+      runMotionClbks pos (_ :: cs) stateRef' = runMotionClbks pos cs stateRef'
+
+  CustomMousePositionCallback : Type
+  CustomMousePositionCallback = Window -> Double -> Double -> Raw (IORef GLFWState) -> ()
+
+  mousePositionCallback : CustomMousePositionCallback
+  mousePositionCallback win' xpos ypos (MkRaw stateRef') = unsafePerformIO $ do 
+    callbackMotion (cast xpos) (cast ypos) stateRef'
+
+  mousePositionCallbackPtr : IO Ptr
+  mousePositionCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr CustomMousePositionCallback -> IO Ptr) (MkCFnPtr mousePositionCallback)
+
+
   ||| Callback for when the user moves the mouse.
   installMotionCallbackGLFW :  IORef GLFWState 
                             -> List Callback
@@ -813,48 +857,6 @@ mutual
       --GLFW.setMousePositionCallback (winHdl s) !mousePositionCallbackPtr -- (callbackMotion stateRef callbacks)
       foreign FFI_C "installMousePosClbk" (Ptr -> Ptr -> Raw (IORef GLFWState) -> IO ()) (winHdl s) !mousePositionCallbackPtr (MkRaw stateRef0) 
       putStrLn "installing motion callback finished"
-    where
-      setMousePos :  Int 
-                  -> Int
-                  -> IORef GLFWState
-                  -> IO (Int, Int)
-      setMousePos x y stateRef' = do
-        putStrLn "setMousePos before"
-        let pos = (x,y)
-        -- TODO: crash occurs when evaluating this statement
-        modifyIORef stateRef' $ \s => record { mousePosition = pos } s
-        putStrLn "setMousePos after"
-        pure pos
-
-      callbackMotion : Int 
-                    -> Int
-                    -> IORef GLFWState
-                    -> IO ()
-      callbackMotion x y stateRef' = do
-          pos <- setMousePos x y stateRef'
-          -- Call all the Gloss Motion actions with the new state.
-          runMotionClbks pos callbacks stateRef'
-
-        where
-          runMotionClbks : (Int, Int) 
-                        -> List Callback
-                        -> IORef GLFWState
-                        -> IO ()
-          runMotionClbks _ [] _ = pure ()
-          runMotionClbks pos (Motion f :: cs) stateRef' = do
-            f stateRef' pos
-            runMotionClbks pos cs stateRef'
-          runMotionClbks pos (_ :: cs) stateRef' = runMotionClbks pos cs stateRef'
-
-      CustomMousePositionCallback : Type
-      CustomMousePositionCallback = Window -> Double -> Double -> Raw (IORef GLFWState) -> ()
-
-      mousePositionCallback : CustomMousePositionCallback
-      mousePositionCallback win' xpos ypos (MkRaw stateRef') = unsafePerformIO $ do 
-        callbackMotion (cast xpos) (cast ypos) stateRef'
-
-      mousePositionCallbackPtr : IO Ptr
-      mousePositionCallbackPtr = foreign FFI_C "%wrapper" (CFnPtr CustomMousePositionCallback -> IO Ptr) (MkCFnPtr mousePositionCallback)
 
   -- Idle Callback --------------------------------------------------------------
   callbackIdle :  IORef GLFWState 
