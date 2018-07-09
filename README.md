@@ -9,7 +9,7 @@ A port of the gloss library from Haskell to Idris, based on version 1.11.1.1. Wi
 ## Library Version: 0.2
 After solving issue #8 and adding BMP support the version will be set to 1.0 as this will then be a proper port. See ChangeLog.md.
 
-### Idris version: 1.2
+### Idris versions: 1.2, 1.3
 
 ### Idris Package Dependencies
 - glfw-idris-st:  https://github.com/thalerjonathan/glfw-idris-st
